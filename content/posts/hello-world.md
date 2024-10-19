@@ -16,7 +16,7 @@ Well, after more than a year of strangling with Hugo, I proudly present to you: 
 
 Some things I'm planning to put here:
 - CTF writeups
-- What I find out after fucking around
+- Stuff I find out after fucking around
 - Maybe something about Manchu? We'll see
 
 Stay tuned :3
