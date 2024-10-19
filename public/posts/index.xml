@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on Terminal</title>
+    <link>//localhost:1313/posts/</link>
+    <description>Recent content in Posts on Terminal</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 19 Oct 2024 14:23:45 +0800</lastBuildDate><atom:link href="//localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Hello World</title>
+      <link>//localhost:1313/posts/hello-world/</link>
+      <pubDate>Thu, 10 Oct 2024 14:26:25 +0800</pubDate>
+      
+      <guid>//localhost:1313/posts/hello-world/</guid>
+      <description>Well, after more than a year of strangling with Hugo, I proudly present to you: azazo&amp;rsquo;s blog!
+Some things I&amp;rsquo;m planning to put here:
+CTF writeups What I find out after fucking around Maybe something about Manchu? We&amp;rsquo;ll see Stay tuned :3</description>
+      <content>&lt;p&gt;Well, after more than a year of strangling with Hugo, I proudly present to you: azazo&amp;rsquo;s blog!&lt;/p&gt;
+&lt;p&gt;Some things I&amp;rsquo;m planning to put here:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;CTF writeups&lt;/li&gt;
+&lt;li&gt;What I find out after fucking around&lt;/li&gt;
+&lt;li&gt;Maybe something about Manchu? We&amp;rsquo;ll see&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Stay tuned :3&lt;/p&gt;
+</content>
+    </item>
+    
+  </channel>
+</rss>
