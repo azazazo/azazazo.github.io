@@ -45,6 +45,8 @@ paginate = 5
   # can be overridden in a page's front-matter
   # TocTitle = "Table of Contents" # default
 
+  math = true
+
 
 [params.twitter]
   # set Twitter handles for Twitter cards
@@ -62,7 +64,7 @@ paginate = 5
     title = "azazo's dump"
 
     [languages.en.params]
-      subtitle = "A simple, retro theme for Hugo"
+      subtitle = "azazo's dump"
       owner = ""
       keywords = ""
       copyright = ""
@@ -100,3 +102,13 @@ paginate = 5
 
 [markup.goldmark.renderer]
   unsafe = true
+
+
+
+[markup.goldmark.extensions]
+  [markup.goldmark.extensions.passthrough]
+    enable = true
+    [markup.goldmark.extensions.passthrough.delimiters]
+      block = [['\[', '\]'], ['$$', '$$']]
+      inline = [['\(', '\)']]
+
