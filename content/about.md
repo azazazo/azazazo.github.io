@@ -3,7 +3,7 @@ title = "About me"
 +++
 
 I'm azazo, but you may also see me online with a username satisfying the regex `a(za)+zo`. I'm currently a student studying (mainly) Computer Science in Singapore 🇸🇬.
-<!-- I'm also a furry, although I'm not that active in the fandom. -->
+<div style="display: none"> im also a furry but im not that active in the fandom (although i would like to be) yippee social anxiety</div>
 
 # Interests
 It's hard to give a definite list because my interest in things wax and wane, but for now I'm interested in:
