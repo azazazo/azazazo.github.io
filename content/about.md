@@ -17,3 +17,5 @@ It's hard to give a definite list because my interest in things wax and wane, bu
 I'm not a very social person, and I have trouble talking to others. If you still want to talk to me, I'm pretty active on Discord and Twitter, but no guarantees as to whether I'll respond (I'll try my best)
 - Discord: azazazo
 - Twitter: @azazazazazo
+
+<sub><sup>if you found my writings interesting/useful please tell me :3</sup></sub>

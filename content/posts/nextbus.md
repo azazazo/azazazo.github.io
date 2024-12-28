@@ -1,6 +1,6 @@
 +++
 title = "I Don't Like The NUS NextBus App So I Did Something About It"
-date = "2024-10-19T14:23:45+08:00"
+date = "2024-12-18"
 author = "azazo"
 # cover = ""
 # tags = ["rev"]
