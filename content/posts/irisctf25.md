@@ -212,8 +212,8 @@ We know that the output of `SubstituteBytes()` will never contain \(b\). Since `
 
 \[
     \begin{align}
-    k_i \oplus c_i &\ne b\\
-    k_i &\ne c_i \oplus b
+    c_i \oplus k_i &\ne b\\
+    k_i &\ne b \oplus c_i
     \end{align}
 \]
 
