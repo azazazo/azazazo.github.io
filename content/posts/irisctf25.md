@@ -266,6 +266,7 @@ for _ in tqdm(range(4096)):
     if all(len(i) == 1 for i in lastrk.values()): break
 
 print(f"Last round key: {lastrk}")
+
 key = [lastrk[i][0] for i in range(16)]
 
 def get_prev_rkey(rkey, rcon_index):
@@ -283,7 +284,7 @@ key = bytes(key)
 
 print(f"Master key: {key}")
 
-plain = aes.AES(bytes(key)).decrypt_block(bytes(key)).hex()
+plain = aes.AES(key).decrypt_block(key).hex()
 io.sendline(plain.encode())
 io.interactive()
 ```
