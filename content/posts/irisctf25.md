@@ -221,6 +221,8 @@ Since we know the value of \(b\), this means that we can slowly eliminate possib
 
 With the final round key, we can reverse the key scheduling algorithm to obtain the "master" key, and use it to decrypt itself to satisfy the requirements of the challenge. In theory, just running the inverse key scheduling algorithm and decryption algorithm should not work as the s-box has changed, but somehow it worked. I'm not too sure why this is the case, but I will think about it and update writeup when I find out.
 
+**Update**: I reran my solve script a few more times, and it looks like you don't consistently get the flag (it failed 3 out of 10 times). I guess the changed s-box thing still applies, and I was just lucky.
+
 Full solve script:
 ```py
 import aes
