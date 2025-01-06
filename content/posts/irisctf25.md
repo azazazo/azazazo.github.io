@@ -182,7 +182,7 @@ print("Why are we still here?")
 
 When I first saw this challenge, I thought I would (finally) have to learn cryptanalysis, and was a bit daunted. However, it turned out to be quite easy.
 
-We are given an implementation of AES, with the quirk we must flip one of the bits of the numbers in the s-box. Then, we are given \(2^12 = 4096\) chances to encrypt some plaintext, and we must submit something that when encrypted results in the key. Effectively, we would have to recover the key used.
+We are given an implementation of AES, with the quirk we must flip one of the bits of the numbers in the s-box. Then, we are given \(2^{12} = 4096\) chances to encrypt some plaintext, and we must submit something that when encrypted results in the key. Effectively, we would have to recover the key used.
 
 The AES algorithm being executed looks something like this (apologies for the lack of pseudocode skill):
 ```bash
