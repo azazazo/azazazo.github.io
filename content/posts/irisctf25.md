@@ -290,3 +290,8 @@ io.interactive()
 ```
 
 Flag: `irisctf{the_first_round_really_is_the_key}`
+
+# conclusion/reflection?
+As I mentioned before, I really liked the challenges from this CTF. Unfortunately, I spent/wasted a lot of time pn the second day trying to solve `Checksumz`, a kernel pwn challenge. I got as far as figuring out how to perform reading and writing of arbitrary addresses, but got a bit lost after that. Kinda sad, but I guess it's fine, because at least the challenge got me to learn about kernel pwn, something I would never voluntarily do.
+
+This is also the first time I've "properly" played with Untitled CTF Game. While I couldn't transcribe my train of thought live in the channel like I normally do, it was still quite an enjoyable experience.
