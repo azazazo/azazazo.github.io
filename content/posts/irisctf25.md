@@ -221,7 +221,7 @@ Since we know the value of \(b\), this means that we can slowly eliminate possib
 
 With the final round key, we can reverse the key scheduling algorithm to obtain the "master" key, and use it to decrypt itself to satisfy the requirements of the challenge. In theory, just running the inverse key scheduling algorithm and decryption algorithm should not work as the s-box has changed, but somehow it worked. I'm not too sure why this is the case, but I will think about it and update writeup when I find out.
 
-**Update**: I reran my solve script a few more times, and it looks like you don't consistently get the flag (it failed 3 out of 10 times). I guess the changed s-box thing still applies, and I was just lucky.
+**Update**: I reran my solve script a few more times, and it looks like you don't consistently get the flag (it failed 3 out of 10 times). I guess the changed s-box thing still applies, and I was just lucky. Doing a back-of-the-envelope calculation, just blindly using the original s-box should work about \(\left(\frac{246}{256}\right)^{16} = 52.9\%\) of the time.
 
 Full solve script:
 ```py
@@ -295,3 +295,8 @@ Flag: `irisctf{the_first_round_really_is_the_key}`
 As I mentioned before, I really liked the challenges from this CTF. Unfortunately, I spent/wasted a lot of time pn the second day trying to solve `Checksumz`, a kernel pwn challenge. I got as far as figuring out how to perform reading and writing of arbitrary addresses, but got a bit lost after that. Kinda sad, but I guess it's fine, because at least the challenge got me to learn about kernel pwn, something I would never voluntarily do.
 
 This is also the first time I've "properly" played with Untitled CTF Game. While I couldn't transcribe my train of thought live in the channel like I normally do, it was still quite an enjoyable experience.
+
+Link to other Untitled CTF Game members' writeups:
+- GrumpyC - https://hackmd.io/@GrumpyC/H1ZVC3uI1x
+- Pwoofy - https://pwoofy.me/IrisCTF_Writeups_2025/
+- Xtrimi - https://xtrimi.github.io/posts/iris25/
