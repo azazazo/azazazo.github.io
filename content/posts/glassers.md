@@ -60,9 +60,9 @@ where \(u(x)=x+a-\sum_{i=1}^{n}\frac{a_i}{x-b_i}\).
 
 {{< figure src="/images/glassers/graph.png" caption="Graph of x - 3/x - 2/(x+5)">}}
 
-In general, the graph is made up of \(n+1\) contiuous "pieces", with discontinuities between the pieces at \(x = b_i\). We can denote these pieces as \(u_0, u_1, \dots, u_n\) that exist and are continuous on \(\left(-\infty, b_1\right), \left(b_1, b_2\right), \left(b_2, b_3\right), \dots, \left(b_n, \infty\right)\) respectively. It's easy to see that the inverses of these pieces, \(u_i^{-1}\), all satisfy the equation \(u\left(u_i^{-1}\left(x\right)\right)\). We will denote the inverses as \(u_i^{-1} = v_i\).
+In general, the graph is made up of \(n+1\) continuous "pieces", with discontinuities between the pieces at \(x = b_i\). We can denote these pieces as \(u_0, u_1, \dots, u_n\), which are continuous on \(\left(-\infty, b_1\right), \left(b_1, b_2\right), \left(b_2, b_3\right), \dots, \left(b_n, \infty\right)\) respectively. It's easy to see that the inverses of these pieces, \(u_i^{-1}\), all satisfy the equation \(u\left(u_i^{-1}\left(x\right)\right)\). We will denote the inverses as \(u_i^{-1} = v_i\).
 
-Now, we consider the equation \(u\left(x\right) = 0\) and multiply to get rid of the denominators in the expression of \(u\left(x\right)\) to obtain a polynomial in \(x\)[^3]:
+Now, we consider the equation \(u\left(x\right) = 0\) and multiply to get rid of the denominators in the expression of \(u\left(x\right)\) and obtain a polynomial in \(x\)[^3]:
 \[
     \begin{align}
     \left(x+a\right) \prod_{i=1}^n \left(x-b_i\right) - \sum_{i=1}^n a_i \prod_{i=1}^n \left(x-b_i\right) &= \left(x+a\right)\left(x-b_1\right)\left(x-b_2\right)\dots\left(x-b_n\right)\\
@@ -78,7 +78,7 @@ Expanding out the products, we get
 \]
 Since this is a polynomial with degree \(n+1\), there are at most \(n+1\) solutions, which are exactly \(v_0, \dots, v_n\). From Vieta's formulas, we also know that \(\sum_{i=0}^n v_i\left(x\right) = -a + \sum_{i=1}^n b_i\).
 
-Now we are ready to put everything together. We can split the original integral into the pieces as follows:
+Now we are ready to put everything together. We can split the original integral into pieces as follows:
 \[
     \begin{align}
     &\int_{-\infty}^\infty f\left(u\left(x\right)\right) dx\\
@@ -101,6 +101,7 @@ and so
 \[
     \int_{-\infty}^\infty f\left(u\left(x\right)\right) dx = \int_{-\infty}^\infty f\left(x\right) dx
 \]
+Hence proven.
 
 [^1]: at least, i did when writing this
 [^2]: and much easier to typeset
