@@ -2,7 +2,7 @@
 title = "Glasser's master theorem"
 date = "2025-05-06T18:06:12+08:00"
 author = "azazo"
-description = "Did you know that the plural of basis is bases? Because I didn't."
+description = "Statement, example, and proof"
 showFullContent = false
 readingTime = false
 hideComments = false
