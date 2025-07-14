@@ -1,8 +1,9 @@
 +++
 title = "ICO and GreyCTF Finals 2025"
-date = "2025-07-06T18:06:12+08:00"
+date = "2025-07-06T11:10:27+08:00"
 author = "azazo"
 description = "Writeups and some thoughts"
+tags = ["ctf", "writeup"]
 showFullContent = false
 readingTime = false
 hideComments = false
