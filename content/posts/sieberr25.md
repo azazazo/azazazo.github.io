@@ -1102,8 +1102,6 @@ print(long_to_bytes(pow(c, pow(e, -1, (p-1)*(q-1)), p*q)))
 
 Flag: `sctf{gagag00googull1ble}`
 
-In my opinion, the challenge was nice in theory, but it kind of got ruined by the fact that h3math's flag hinted to the solution. It could have also been made neater by removing the `print(f'b = {b}')`, since \(b\) can be recovered by just sending in 0 and dividing.
-
 ## Crypto - crocodile
 
 > sand beats paper. one sand beats rock. line sand beats scissors. crypto what beats sand?
