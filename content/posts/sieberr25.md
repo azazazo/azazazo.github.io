@@ -11,7 +11,7 @@ hideComments = false
 
 {{< math >}}
 
-Last weekend I participated in SieberrSec as part of the team `ist es over für mich` (the German team), with two other friends. It was my first time doing a CTF with them, and we managed to clinch first place for both qualifiers and finals, which I'm pretty proud of. I will be writing about some of the challenges that I managed to solve during and after the CTF.
+Last weekend I participated in SieberrSec as part of the team `ist es over für mich` (the German team), with two other friends ([here](https://wrenches.online/sieberr.html) are writeups from my BGFC (Beautiful Genius Friend Cane)). It was my first time doing a CTF with them, and we managed to clinch first place for both qualifiers and finals, which I'm pretty proud of. I will be writing about some of the challenges that I managed to solve during and after the CTF.
 
 # Quals
 ## Crypto - h1math
