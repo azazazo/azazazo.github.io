@@ -24,3 +24,7 @@ There are three states -- \(S_0\), \(S_1\), \(S_2\) -- represented by verticies 
 
 # Finding remainders
 You might have noticed that there are three states in a FSM for divisibility by 3. This is not a coincidence! In fact, the three states represent the remainder when dividing by 3. The transitions then can be easily understood: every time you accept a new bit, you are multiplying the current number by 2 then adding either 0 or 1, so we can figure out which arrow goes where with modular arithmetic.
+
+# Turning FSMs into combinatorial circuits
+
+# Turning FSMs into regexs
