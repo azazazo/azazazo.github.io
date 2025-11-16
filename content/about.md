@@ -22,4 +22,10 @@ I'm not a very social person, and I have trouble talking to others. If you still
 # About this website
 Originally I wanted to put together my own blogging framework-slash-system (called kakugo), but my burnout is crippling me so I settled for Hugo. I guess this place is a placeholder until I finally finish kakugo. See you there soon™?
 
+# See also
+Here is a list of websites from Very Cool People (who I hope consider me as their friend) you should check them out
+- https://canairo.github.io/
+- https://scuffed.online/
+- https://fern89.github.io/
+
 <sub><sup>if you found my writings interesting/useful please tell me :3</sup></sub>
