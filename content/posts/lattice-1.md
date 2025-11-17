@@ -1,12 +1,11 @@
 +++
 title = "Let's Learn LLL! Part 1"
-date = "2024-11-04T18:06:12+08:00"
+date = "2025-11-17T14:10:12+08:00"
 author = "azazo"
 description = "the math behind the slaughter"
 showFullContent = false
 readingTime = false
 hideComments = false
-draft = true
 +++
 
 {{< math >}}
@@ -15,7 +14,7 @@ draft = true
 
 I've been wanting to write this for a LONG time (since about mid-2023 maybe), but I never got around to doing it. Somehow I've been super productive for the past few days though[^1], so I thought I might as well cross one more thing off of my to-do list.
 
-I'm splitting this introduction into the two parts: the first part (which you are reading now) will cover the mathematical background on lattices, while the second part will cover the applications of lattices in cryptography CTF challenges. If you're a cryptoer that doesn't care about the math behind the tools you use (you make me sad), feel free to not read this.
+I'm splitting this introduction into the two parts: the first part (which you are reading now) will cover the mathematical background on lattices, while the second part will cover the applications of lattices in cryptography CTF challenges.
 
 Anyways, since this is meant to be an introduction to lattices geared towards CTFers, I will not be very rigorous. Sorry.
 
@@ -338,19 +337,66 @@ Lagrange's algorithm, while guaranteed to return the most reduced basis in a lat
 > 
 > where \(\boldsymbol{b}^\ast\) and \(\mu\) are the Gram-Schmidt vectors and coefficients as mentioned previously, and \(\frac14 < \delta < 1\).
 
-The first condition can also be seen in the definition of Lagrange reduction, but the second is new and (at least for me) might be confusing at first glance. Again, here is pseudocode for the LLL algorithm:
-```py
-def LLL(B, delta):
-    Bstar = gram_schmidt(B)
+The first condition can also be seen in the definition of Lagrange reduction, but the second is new and might be confusing at first glance. Unfortunately, I've not quite gained complete understanding of how these two conditions aid reduction and the algorithm itself, so I will link to [a good overview of LLL by Cryptohack](https://cryptohack.gitbook.io/cryptobook/lattices/lll-reduction/lll-reduced-basis).[^5] The algorithm itself can be roughly described as repeatedly performing Gram-Schmidt orthogonalisation (rounding the \(\mu\)s to ensure that the new vectors are still in the lattice) and swapping pairs of vectors by a heuristic represented by the Lovász condition.
 
-    def mu(i, j):
-        return B[i].dot(Bstar[j]) / Bstar[j].dot(Bstar[j])
-    
-    for k in range(2, n+1):
-        
-```
+We will be proving a claim about a bound on the length of the shortest vector in the basis returned by LLL.
+
+> **Claim**: for a LLL-reduced basis \(\left(\boldsymbol{b}_1, \boldsymbol{b}_2, \dots, \boldsymbol{b}_n\right)\) of the lattice \(\mathcal{L}\), the shortest vector \(\boldsymbol{b}_1\) satisfies
+> \[
+    \Vert \boldsymbol{b}_1 \Vert \le \left(\delta - 1/4\right)^{(1-n)/4} \left( \det \mathcal{L} \right)^{1/n}
+\]
+> **Proof**: By using the LLL-reduction conditions, we have that
+> \[
+    \begin{align}
+    \Vert \boldsymbol{b}_i \Vert^2 &= \Vert \boldsymbol{b}_i^\ast \Vert^2 + \sum_{j=1}^{i-1} \mu_{i,j}^2 \Vert\boldsymbol{b}_j^\ast\Vert^2\\
+    &\le \Vert \boldsymbol{b}_i^\ast \Vert^2 + \frac{1}{4} \sum_{j=1}^{i-1} \Vert\boldsymbol{b}_j^\ast\Vert^2 &&\text{(from size reduction)}\\
+    &\le \Vert \boldsymbol{b}_i^\ast \Vert^2 + \frac{1}{4} \Vert\boldsymbol{b}_i^\ast\Vert^2 \sum_{j=1}^{i-1} \prod_{k=j}^{i-1} \left(\delta - \mu^2_{k+1,k}\right)^{-1} &&\text{(from Lovász condition)}\\
+    &\le \Vert \boldsymbol{b}_i^\ast \Vert^2 + \frac{1}{4} \Vert\boldsymbol{b}_i^\ast\Vert^2 \sum_{j=1}^{i-1} \prod_{k=j}^{i-1} \left(\delta - 1/4\right)^{-1} &&\text{(from size reduction)}\\
+    &= \Vert \boldsymbol{b}_i^\ast \Vert^2 + \frac{1}{4} \Vert\boldsymbol{b}_i^\ast\Vert^2 \sum_{j=1}^{i-1} \left(\delta - 1/4\right)^{j-i}\\
+    &= \Vert \boldsymbol{b}_i^\ast \Vert^2 \left( 1 + \frac{1}{4} \frac{\left(\delta - 1/4\right)^{-i} - \left(\delta - 1/4\right)^{-1}}{\left(\delta - 1/4\right)^{-1} - 1}\right)\\
+    \end{align}
+\]
+> Now note that the mess in the brackets is \(\le \left(\delta - 1/4\right)^{1-i}\) for \(i \ge 1\), so furthermore we have that
+> \[
+    \Vert \boldsymbol{b}_i \Vert^2 \le \left(\delta - 1/4\right)^{1-i} \Vert \boldsymbol{b}_i^\ast \Vert^2
+\]
+> By again using the two conditions, we have that for \(i \le j\),
+> \[
+    \begin{align}
+    \Vert \boldsymbol{b}_i \Vert^2 &\le \left(\delta - 1/4\right)^{1-i} \Vert \boldsymbol{b}_i^\ast \Vert^2\\
+    &\le \left(\delta - 1/4\right)^{1-i} \left(\delta - 1/4\right)^{i-j} \Vert \boldsymbol{b}_j^\ast \Vert^2\\
+    &= \left(\delta - 1/4\right)^{1-j} \Vert \boldsymbol{b}_j^\ast \Vert^2
+    \end{align}
+\]
+> and in particular, for \(1 \le i\), \(\Vert \boldsymbol{b}_1 \Vert \le \left(\delta - 1/4\right)^{(1-i)/2} \Vert \boldsymbol{b}_i^\ast \Vert\). Now,
+> \[
+    \begin{align}
+    \Vert \boldsymbol{b}_1 \Vert^n &\le \prod_{i=1}^n \left(\delta - 1/4\right)^{(1-i)/2} \Vert \boldsymbol{b}_i^\ast \Vert\\
+    &= \left(\delta - 1/4\right)^{n(1-n)/4} \det \left( \mathcal{L} \right)
+    \end{align}
+\] 
+> so we have, as desired,
+> \[
+    \begin{align}
+    \Vert \boldsymbol{b}_1 \Vert \le \left(\delta - 1/4\right)^{(1-n)/4} \left( \det \mathcal{L} \right)^{1/n}
+    \end{align}
+\]
+
+This bound is different from the Minkowski's bound mentioned earlier; Minkowski's bound is algorithm agnostic and applies for every single basis, while this bound is specific for LLL-reduced bases. Funnily enough, for lattices with small dimension, this bound actually outperforms Minkowski's bound if \(\delta\) is chosen correctly.
+
+Generally, the larger the value of \(\delta\) is, the "better" your reduced basis will be, but if \(\delta > 1\) the algorithm is not guaranteed to run in polynomial time (i.e. fast enough). By default, Sage uses \(\delta = 0.99\), but in certain cases smaller values like \(0.75\) would also work.
+
+# conclusion
+
+There are a lot of other lattice reduction algorithms out there (BKZ, [flatter](https://github.com/keeganryan/flatter/)) that have their own advantages and disadvantages, but LLL is probably the most well-known. If you're interested about lattices, you should definitely read up more about them!
+
+Sorry if it seems like there's not a lot of content about LLL in this post, but I couldn't really write about the actual algorithm itself in a satisfactory way, and it ended up draining a lot of my time and energy, so I resorted to linking to other people's work.[^6] I hope you still learnt something from this post though!
+
+Stay tuned for the next part where we actually use LLL to do crypto challenges!
 
 [^1]: burn out recovery real? probably not. we'll see (edit: it was not real)
 [^2]: in other resources about lattices you might see basis vectors arranged as columns but i am using rows because that's how sage does it
 [^3]: read: i'm too lazy to write the proof here :3
 [^4]: less mathy, that is
+[^5]: this feels like cheating but honestly ive been trying to write and explain it for the better part of about a year and still nothing feels correct so maybe this is for the better
+[^6]: in fact the one section on LLL took about 5 times longer to write than the rest. this entire post took ONE YEAR and a couple of days to write, so some parts/notation might feel inconsistent. can you tell?

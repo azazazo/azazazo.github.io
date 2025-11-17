@@ -14,7 +14,7 @@ draft = true
 # Introduction
 Abel once said that Gauss "is like the fox, who effaces his tracks in the sand with his tail", to which Gauss replied, "no self-respecting architect leaves the scaffolding in place after completing his building". Indeed, Gauss's motto was "Pauca sed Matura" (few but ripe), and his work was often terse and opaque, devoid of motivation.
 
-Like Gauss, a lot of "modern" math proofs don't really show their author's reasoning, but rather presents a clean and polished result with details swept away by phrases such as "note that", "it is easy to see that", "one may observe that", and more. However, sometimes the thought process behind the proof is also rather interesting. In this post, I will introduce 3 "miraculous" proofs, and try to break down the thought process behind them.
+Like Gauss, a lot of math proofs don't really show their author's reasoning, but rather presents a clean and polished result with details swept away by phrases such as "note that", "it is easy to see that", "one may observe that", and more. However, sometimes the thought process behind the proof is also rather interesting. In this post, I will introduce 3 "miraculous" proofs, and try to break down the thought process behind them.
 
 # Sum of rational cubes
 
