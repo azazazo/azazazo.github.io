@@ -105,4 +105,4 @@ Hence proven.
 
 [^1]: at least, i did when writing this
 [^2]: and much easier to typeset
-[^3]: note that here, \(x\) can also a function like \(u\). personally im not a great fan of this notation but eh
+[^3]: note that here, \(x\) can also be a function like \(u\). personally im not a great fan of this notation but eh

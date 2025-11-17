@@ -97,7 +97,7 @@ A formal proof is left as an exercise to the reader[^3], but a basic idea of the
 
 {{< figure src="/images/lattice-1/blichfeldt.png" caption="Image from Wikipedia">}}
 
-An important corrolary of this theorem is Minkowski's theorem.
+An important corollary of this theorem is Minkowski's theorem.
 
 > **Theorem** (Minkowski's theorem): Let \(\mathcal{L}\) be an \(n\)-dimensional full-rank lattice. If a convex set \(S \subset \mathbb{R}^n\) is symmetric about the origin and \(\text{vol}\left(S\right) > 2^n \det \mathcal{L}\), then there exists a point \(x \in S \setminus \left\{0\right\}\) such that \(x \in \mathcal{L}\).
 
