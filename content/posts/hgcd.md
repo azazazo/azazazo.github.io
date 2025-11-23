@@ -49,8 +49,51 @@ For general commutative rings, there is no good way to identify the "greatest" e
 In fact, there are rings where the Euclidean algorithm fails, and rings where GCDs are not even guaranteed to exist. But continuing further down this path will lead us to A Dark Place where irreducible and prime have different meanings, things no longer factor uniquely, and "ramify" is a commonly used word, so let's not go too far. Let's stick with polynomial rings in one indeterminate over fields \(K[x]\), which behave nicely with the Euclidean algorithm.
 
 # introducthree
+The greatest common divisor of two polynomials \(F(x)\) and \(G(x)\) is the monic polynomial \(d(x)\) such that
+1. \(d \vert F\) and \(d \vert G\)
+2. for every polynomial \(e\) such that \(e \vert F\) and \(e \vert G\), \(e \vert d\) also holds
 
+This is just the same definition as introduced before adapted for polynomials. We also choose the monic polynomial to be the "canonical" GCD for simplicity.
 
+How would one implement this in, say, Sage? Since the Euclidean algorithm works in \(K[x]\), we can just do
+```py
+def gcd(a, b):
+    if b == 0:
+        return a.monic()
+    else: return gcd(b, a % b)
+```
+which works fabulously:
+```py
+sage: K.<x> = GF(17)[]
+sage: a = K.random_element(degree=15)
+sage: b = K.random_element(degree=15)
+sage: def gcd(a, b):
+....:     if b == 0:
+....:         return a.monic()
+....:     else: return gcd(b, a % b)
+....: 
+sage: gcd(a, b)
+1
+sage: k = K.random_element(degree=3)
+sage: a *= k
+sage: b *= k
+sage: gcd(a, b)
+x^3 + 4*x^2 + 13*x + 3
+sage: k.monic()
+x^3 + 4*x^2 + 13*x + 3
+```
+
+Let's ponder about the time complexity of this algorithm. The total number of steps should be roughly on the order of \(O(\min(\deg F, \deg G))\), where \(\deg F\) is the degree of \(F\). At every step, we are performing a modulo. This modulo can be thought of as a division then a subtraction:
+
+\[
+    \begin{align}
+    F(x) \% G(x) &= F(x) - \frac{f_{\deg F} x^{\deg F}}{g_{\deg G} x^{\deg G}} G(x)
+    \end{align}
+\]
+
+Since polynomials are basically a list of numbers, this takes \(O(\min(\deg F, \deg G))\) time to compute too, so our final time complexity is something like \(O(\min(\deg F, \deg G)^2)\). This is not a very rigorous argument, but should hopefully be close enough.
+
+Quadratic time is not very good.
 
 [^1]: closely mirroring the greek term ἀνθυφαίρεσις also meaning alternating/reciprocal subtraction
 [^2]: you might notice that these values differ from one another only by multiplication by \(-1\) or \(i\); \(1, -1, i, -i\) are called *units* in \(\mathbb{Z}[i]\) and the four gcds are *associates*. in particular, for integral domains, gcds must always be associates.
