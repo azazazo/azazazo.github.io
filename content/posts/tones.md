@@ -6,7 +6,7 @@ description = ""
 showFullContent = false
 readingTime = false
 hideComments = false
-#draft = true
+draft = true
 +++
 
 (Mandarin) Chinese famously has four tones. It is also arguably the most well known tonal language, both in terms of how many speakers it has and how many people know of it. I like tonal languages a lot, and I also happen to be a native speaker of Mandarin Chinese, so I thought I would spend some time talking (writing?) about tones in Chinese, but that isn't nearly enough content, so I'll be discussing some other languages as well.
