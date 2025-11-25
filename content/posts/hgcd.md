@@ -91,9 +91,11 @@ Let's ponder about the time complexity of this algorithm. The total number of st
     \end{align}
 \]
 
-Since polynomials are basically a list of numbers, this takes \(O(\min(\deg F, \deg G))\) time to compute too, so our final time complexity is something like \(O(\min(\deg F, \deg G)^2)\). This is not a very rigorous argument, but should hopefully be close enough.
+Since polynomials are basically a list of numbers, this takes \(O(\min(\deg F, \deg G))\) time to compute too, so our final time complexity is something like \(O(\min(\deg F, \deg G)^2)\). Of course, this is assuming that all arithmetic operations on the coefficients of the polynomial take \(O(1)\) time. 
 
-Quadratic time is not very good.
+Quadratic time is not very good. Not necessarily unusable, but still bad enough to leave one desiring for an alternative.
+
+https://mystiz.hk/posts/2021/2021-02-15-dicectf-1/
 
 [^1]: closely mirroring the greek term ἀνθυφαίρεσις also meaning alternating/reciprocal subtraction
 [^2]: you might notice that these values differ from one another only by multiplication by \(-1\) or \(i\); \(1, -1, i, -i\) are called *units* in \(\mathbb{Z}[i]\) and the four gcds are *associates*. in particular, for integral domains, gcds must always be associates.
