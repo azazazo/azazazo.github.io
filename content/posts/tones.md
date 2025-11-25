@@ -17,6 +17,11 @@ It would do us good to first explain what tone is. Tonal languages assign a *pit
 Mandarin Chinese has four tones (or five, depending on how you count[^1]).
 
 # Chinese
+Tones started to definitively exist in Chinese starting around the Sui dynasty (581 to 618 AD). In what is arguably one of the first rime dictionary (basically pronunciation guide) of Chinese published in 601, the *Qieyun* (切韵), words were divided among four tones: *ping, shang, qu, and ru* (平 level, 上 rising, 去 departing, 入 entering respectively). 
+
+Reconstructions based off of the phonological system demonstrated by Qieyun are referred to as *Early Middle Chinese* (EMC). So, we can say that differences in tones were prominent enough in EMC to be recorded down systematically. But what about before EMC? 
+
+
 
 # 
 
