@@ -37,7 +37,7 @@ The most well-accepted hypothesis for how OC codas developed into MC tones is th
 2. syllables with a glottal stop coda, *-ʔ, became shang tone
 3. syllables with a coda of *-s became qu tone
 4. all other syllables became ping tone
-This hypothesis is well-supported with evidence from Vietnamese, which underwent a similar tonogenesis process, and borrowings from other languages being adapted to fit Chinese phonology. In particular, various borrowings from other languages with coda s carry qu tone syllables.
+This hypothesis is well-supported with evidence from Vietnamese, which underwent a similar tonogenesis process, and borrowings from other languages being adapted to fit Chinese phonology. In particular, various borrowings from other languages with coda s carry qu tone syllables, and some early Chinese loanwords into Korean have coda -s for Middle Chinese departing tone.
 
 It is important to note that the ping, shang, qu, and ru tones do *not* correspond to the four tones in modern Mandarin, even though coincidentally there are four major categories in both MC and Mandarin. The four tones of Mandarin were derived from interactions between the initials of a syllable and its tone. Before discussing exactly how the four tones of MC evolved into the four tones of Mandarin today, let's take a brief look at MC phonology first. I'll try to keep it short, since we won't be concerned with most of the details.
 
@@ -76,7 +76,7 @@ Wow. With the exception of the ru tone, most syllables can be sorted nicely into
 11. 没 *mwot (sonorant, ru) > mo4
 12. 十 *dzyip, 涉 *dzyep (both voiced, ru) > shi2, she4
 
-As for why the initial influenced the development of tone, voiced consonants tend to decrease the fundamental frequency of the following vowel, resulting in a split between syllables with voiced and voiceless initials. Then, as MC lost voiced initials, this change was reflected through tone instead.[^4]
+As for why the initial influenced the development of tone, voiced consonants tend to decrease the fundamental frequency of the following vowel, resulting in a split in pitch between syllables with voiced and voiceless initials. Then, as MC lost voiced initials, the change in pitch was more set in stone as a way to differentiate between words and became the tones of Mandarin.[^4]
 
 A brief tangent: there are many fun things you can do with this information coupled with some knowledge on how initials evolved from MC to Mandarin. You can go the other way and kind of guess how a word was pronounced in MC from its Mandarin reading. You can explain why certain syllables like jiang2 never show up in Mandarin:
 
@@ -88,8 +88,22 @@ A brief tangent: there are many fun things you can do with this information coup
 All of this is very fun and interesting to me.
 
 ## Dialects
+Broadly speaking, Chinese dialects can be grouped into 8 families based on how they evolved from MC.[^5] The 8 families are, roughly in order of number of native speakers:
+1. Mandarin, spoken in northern and southwestern China
+2. Min, spoken in mainly Fujian (Hokkien, Teochew, ...)
+3. Wu, spoken in Shanghai, Zhejiang, and surrounding areas (Shanghainese, Suzhounese, ...)
+4. Yue, spoken in Guangdong, Guangxi, and surrounding areas (Cantonese, ...)
+5. Jin, spoken in Shanxi and surrounding areas
+6. Gan, spoken in Jiangxi and surrounding areas (Nanchang dialect, ...)
+7. Hakka, spoken in Fujian, Guangdong, and surrounding areas
+8. Xiang, spoken in mainly Hunan (Changsha dialect, ...)
+
+If you are familiar with Chinese geography, you might notice that most of these families are based in southeastern China. This is probably due to both geographical and historical reasons: south China has a more difficult terrain as compared to north China so people from different places would not be able to communicate and form linguistic homogeneity easily, and historically the capitals of Chinese dynasties were all located in the north.
+
+No modern dialect has retained the same distinction of the four tones from MC; they have almost all split and recombined into different categories.
 
 # Tibetan
+
 
 # Middle Korean
 
@@ -103,3 +117,4 @@ All of this is very fun and interesting to me.
 [^2]: i find it kind of funny that they were so enthused by chinese phonology. its probably because as buddhist monks, they interact with sanskrit texts quite often, and so there was a natural enthusiasm for sanskrit phonology which extended to chinese
 [^3]: theres no precise number because rime dictionaries dont explicitly say what character began with what sound, only that two characters began with the same sound
 [^4]: this is actually a very common trigger for tonogenesis
+[^5]: this means that mutually intelligible dialects will be grouped into the same family. in fact i think some people dont use the term "dialect" and instead use "topolect" or "variety" for this reason. if we take mutual intelligibility as the criteria for differentiating between language and dialect there would be hundreds of languages in china

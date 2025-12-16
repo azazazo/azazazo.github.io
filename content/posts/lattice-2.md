@@ -12,5 +12,5 @@ draft = true
 *This is part 2 of a series about LLL. You can read part 1 [here](https://blog.azazo.me/posts/lattice-1/).*
 
 # introduction
+Last time, we discussed what lattices are, and looked at an algorithm to solve lattice reduction problems. As a refresher, lattices are linear combinations of vectors with integer coefficients, and lattice reduction algorithms take in a basis for a lattice and returns another basis with hopefully shorter basis vectors. LLL is a very common lattice reduction algorithm that gives us a bound on what the length of the shortest vector in the basis it returns is.
 
-Last time, we discussed what lattices are, and looked at an algorithm to solve lattice reduction problems. As a refresher, lattices are linear combinations of vectors with integer coefficients, and lattice reduction algorithms take in a basis for a lattice and returns another basis with hopefully shorter basis vectors.
