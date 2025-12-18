@@ -1,26 +1,25 @@
 +++
 title = "BlahajCTF 2025 Author Writeups & Commentary"
-date = "2025-10-14T18:00:00+08:00"
+date = "2025-12-18T16:00:00+08:00"
 author = "azazo"
 description = "...and looking back on 3 years of BlahajCTF"
 showFullContent = false
 readingTime = false
 hideComments = false
-draft = true
 +++
 
 {{< math >}}
 
 # Introduction
 
-This year was the 3rd iteration of BlahajCTF, organised by a bunch of friends and I. We scaled up our event quite considerably as compared to last year, with about twice the amount people attending the physical finale/final round of the CTF. It certainly wasn't entirely smooth sailing, but I really enjoyed working with the rest of the organisers and I'm glad that I had this chance to work with such talented and wonderful people.
+This year was the 3rd iteration of BlahajCTF, organised by a bunch of friends and I. We scaled up our event quite considerably as compared to last year, with about twice the amount people attending the physical finale/final round of the CTF. It wasn't entirely smooth sailing, but I really enjoyed working with the rest of the organisers and I'm glad that I had this chance to work with such talented and wonderful people.
 
 # Writeups
 I wrote five challenges this year; four crypto and one misc. I'll be giving detailed(?) writeups for them, as well as some commentary. You can find the challenge sources and solve scripts in the official challenge repository (probably releasing soon).
 
 Unfortunately, both of my challenges in qualifiers (crypto/cats and crypto/rot13) had unintended solutions (in fact crypto/cats was cheesed so hard that it got blooded within 9 minutes). I patched the unintended solution for crypto/cats and re-released it in finals as crypto/cats-revenge, but crypto/rot13 wasn't patched because that would have tilted the category proportion of finals a bit too much. crypto/liar-dancer in finals also had an unintended solution.
 
-Furthermore, it was a bit sad to see that most of my challenges could be oneshotted using codex, but I suppose that is inevitable for challenges in a beginner oriented CTF.
+Furthermore, it was a bit sad to see that most of my challenges could be oneshotted using codex, but I suppose that is inevitable for challenges in a beginner oriented CTF. I sincerely hope that people who completely relied on ChatGPT and codex to solve my challenges can learn something from this post.
 
 ## crypto/liar-dancer, 34 solves
 My good friend [wrenches](https://wrenches.online/) brought up the idea of using carmichael numbers in a challenge.
@@ -171,13 +170,68 @@ which, for the bytecode section, does something like
               UNARY_NOT
               RETURN_VALUE
 ```
-and sadly if you try to disassemble yourself with `dis.dis()` the Python interpreter screams at you because `LOAD_FAST` gets locals and there clearly aren't enough locals in `()` for us to access the 35th. In fact, you can do all sorts of funny things with this: trying to access some locals with segfault immediately; doing `eval(recompile(b'U\x01$ '))` three times works fine but the fourth gets you a SIGABRT. Let's take a brief tangent to investigate this behavior because I think it's funny.
+and sadly if you try to disassemble yourself with `dis.dis()` the Python interpreter screams at you because `LOAD_FAST` gets locals and there clearly aren't enough locals in `()` for us to access the 35th. This is an array OOB read.
 
-### why
+If you go to [the relevant section in the CPython source code](https://github.com/python/cpython/blob/fb5474726cceae6c05aad5076b50fbd586527558/Python/generated_cases.c.h#L4302), you can see that the instruction `LOAD_FAST` does
+```c
+TARGET(LOAD_FAST) {
+    frame->instr_ptr = next_instr;
+    next_instr += 1;
+    INSTRUCTION_STATS(LOAD_FAST);
+    PyObject *value;
+    value = GETLOCAL(oparg);
+    assert(value != NULL);
+    Py_INCREF(value);
+    stack_pointer[0] = value;
+    stack_pointer += 1;
+    DISPATCH();
+}
+```
+with `GETLOCAL()` being defined as
+```c
+#define GETLOCAL(i)     (frame->localsplus[i])
+```
 
+Here, `frame` is a `_PyInterpreterFrame` struct. A `_PyInterpreterFrame` is kind of like the _context_ that bytecode is executed in, storing its locals, stack, instruction pointer, and other properties:
+```c
+typedef struct _PyInterpreterFrame {
+    PyObject *f_executable; /* Strong reference (code object or None) */
+    struct _PyInterpreterFrame *previous;
+    PyObject *f_funcobj; /* Strong reference. Only valid if not on C stack */
+    PyObject *f_globals; /* Borrowed reference. Only valid if not on C stack */
+    PyObject *f_builtins; /* Borrowed reference. Only valid if not on C stack */
+    PyObject *f_locals; /* Strong reference, may be NULL. Only valid if not on C stack */
+    PyFrameObject *frame_obj; /* Strong reference, may be NULL. Only valid if not on C stack */
+    _Py_CODEUNIT *instr_ptr; /* Instruction currently executing (or about to begin) */
+    int stacktop;  /* Offset of TOS from localsplus  */
+    uint16_t return_offset;  /* Only relevant during a function call */
+    char owner;
+    /* Locals and stack */
+    PyObject *localsplus[1];
+} _PyInterpreterFrame;
+```
 
+`localsplus` is a special array of pointers that contains both the fast locals[^2] and the stack used in executing Python bytecode. For performance reasons (presumably), they are consecutive in memory without any padding or any access checks, which lets you do some cool things like access arbitrary values in the stack:
+```py
+>>> recompile(b"\x19.U\x004\x02$.")
+<code object <module> at 0x781349250fa0, file "<string>", line 1>
+>>> eval(_)
+({'__name__': '__main__', '__doc__': None, '__package__': '_pyrepl', '__loader__': None, '__spec__': None, '__annotations__': {}, '__builtins__': <module 'builtins' (built-in)>, '__file__': '/usr/lib/python3.13/_pyrepl/__main__.py', '__cached__': '/usr/lib/python3.13/_pyrepl/__pycache__/__main__.cpython-313.pyc', 'dis': <module 'dis' from '/usr/lib/python3.13/dis.py'>, 'recompile': <function recompile at 0x781349297420>}, {'__name__': '__main__', '__doc__': None, '__package__': '_pyrepl', '__loader__': None, '__spec__': None, '__annotations__': {}, '__builtins__': <module 'builtins' (built-in)>, '__file__': '/usr/lib/python3.13/_pyrepl/__main__.py', '__cached__': '/usr/lib/python3.13/_pyrepl/__pycache__/__main__.cpython-313.pyc', 'dis': <module 'dis' from '/usr/lib/python3.13/dis.py'>, 'recompile': <function recompile at 0x781349297420>})
+```
+This pushes the `locals()` dictionary onto the stack, then pushes it again but this time by accessing it using `LOAD_FAST 0`; since there are no fast locals, this accesses the bottom-most element on the stack. You could probably do some cool obfuscation stuff with this.
 
-# blahajctf in retrospect
-I have been working in BlahajCTF's core team for three years now. If you were at finals you would have heard from the speech, but at first we had no intention of hosting such a large-scale event. Blahaj "CTF" started out as an... aptitude test? for people who were trying to join our CTF team, blahaj. Then, in 2023, we partnered with another student-led CS organisation to produce the very first iteration of BlahajCTF. Back
+Anyways, in our case, since our code object comes from `compile('()', '<string>', 'eval')`, we have zero locals and our stack is also empty when `LOAD_FAST 34` is executed. This means that the value we get is just a random value from previous frames' locals/stack, so the behavior is undefined; in fact in different situations `LOAD_FAST 34` will return different results. However, for most Python objects, doing `UNARY_NOT` twice will give `True` since they are truthy, so this payload just Happens to Work in most situations. Funnily enough, when I run the challenge file locally with `./chal.py` instead of using Docker, `LOAD_FAST 34` actually pushes `False` onto the stack, breaking this payload.
+
+# BlahajCTF in retrospect
+I have been part of BlahajCTF's core team for three years now. If you were at the finale you would have heard from the speech, but at first we had no intention of hosting such a large-scale event. Blahaj "CTF" started out as an... aptitude test(?) for people who were trying to join our CTF team, blahaj. Then, in 2023, we partnered with another student-led CS organisation to produce the very first iteration of BlahajCTF. Back then we had less than 10 challenge authors and maybe about 40 challenges in total. Our infrastructure also was not very stable, and kept crashing.
+
+In 2024, we parted ways with the other organisation and became independent, at the same time expanding and formally setting up our team, bringing in more people to help with challenge creation and publicity. We also managed to secure NTU as a venue, so we could hold a physical finale with about 60 people to end the CTF with a blast. At the same time, we also got a sponsor who was willing to place their trust in us despite how young BlahajCTF was. This was also the year we set our sights on being a beginner oriented CTF, so we had an additional one day training programme over Discord.
+
+This year, we again expanded, inviting more than twice the number of people to finale and having a full 5-day almost 9-to-5 training programme. While I had some concerns about how effective the training would be, it went better than I expected; most training participants managed to learn something new, and some even managed to understand the concept of tcache poisoning. I've definitely learnt a lot from organising BlahajCTF this year, both CTF-wise and in general, and I hope our participants did too!
+
+While I've had my fair share of hassles and frustrations over the past three years, it's all worth it seeing people enjoy BlahajCTF. I don't know if I'll help out with BlahajCTF again next year due to, ahem, *other obligations*, but I probably will end up doing so because of FOMO.
+
+Finally, here's a textwall of appreciation to all the organisers that I'm too scared to put in `#challenge-creation`: I consider myself truly lucky to have been able to meet and work with so many people passionate about CTFs, and I enjoyed every single moment I spent with you all, online, during training, or at the finale. Whether it be slacking off and drawing during training, rushing to put everything up on the platform the night before quals, or walking around the room during finale so people can see the letter taped to my shirt, I will remember these moments for many years to come. Hopefully it was as enjoyable for you all as it was for me, thank you all for putting in so much work, and may we meet again :)
 
 [^1]: i think all of them were made by ariana which is very funny. she is a major reason why i started getting into crypto in ctfs
+[^2]: you might think that this is the job of `f_locals` but i _think_ `f_locals` is getting deprecated? cpython says that it's now "a write-through proxy in optimised frames", presumably to `localsplus`
