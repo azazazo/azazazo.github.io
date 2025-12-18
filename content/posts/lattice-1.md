@@ -3,6 +3,7 @@ title = "Let's Learn LLL! Part 1"
 date = "2025-11-17T14:10:12+08:00"
 author = "azazo"
 description = "the math behind the slaughter"
+tags = ["math", "lattice"]
 showFullContent = false
 readingTime = false
 hideComments = false

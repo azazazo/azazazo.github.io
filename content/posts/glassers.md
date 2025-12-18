@@ -3,6 +3,7 @@ title = "Glasser's master theorem"
 date = "2025-05-06T18:06:12+08:00"
 author = "azazo"
 description = "Statement, example, and proof"
+tags = ["math"]
 showFullContent = false
 readingTime = false
 hideComments = false

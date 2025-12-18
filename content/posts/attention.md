@@ -3,6 +3,7 @@ title = "Attention is all you need"
 date = "2025-09-11T18:06:12+08:00"
 author = "azazo"
 description = "only NINETY NINE percent of ATTENTIVE readers can spot this INGENIOUS argument"
+tags = ["math"]
 showFullContent = false
 readingTime = false
 hideComments = false

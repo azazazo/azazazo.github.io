@@ -3,6 +3,7 @@ title = "Evaluating sums with the residue theorem"
 date = "2025-05-15T11:41:30+08:00"
 author = "azazo"
 description = "A (perhaps surprising) application"
+tags = ["math"]
 showFullContent = false
 readingTime = false
 hideComments = false

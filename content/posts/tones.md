@@ -3,6 +3,7 @@ title = "Tones in East Asian Languages"
 date = "2025-09-11T18:06:12+08:00"
 author = "azazo"
 description = ""
+tags = ["linguistics"]
 showFullContent = false
 readingTime = false
 hideComments = false

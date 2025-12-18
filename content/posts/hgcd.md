@@ -3,6 +3,7 @@ title = "The Half-GCD algorithm"
 date = "2024-11-04T18:06:12+08:00"
 author = "azazo"
 description = "divide and conquer goes brrrrr"
+tags = ["math", "ctf"]
 showFullContent = false
 readingTime = false
 hideComments = false

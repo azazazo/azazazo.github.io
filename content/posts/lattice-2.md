@@ -3,6 +3,7 @@ title = "Let's Learn LLL! Part 2"
 date = "2025-11-17T14:10:12+08:00"
 author = "azazo"
 description = "when you have lll everything looks like a lattice reduction problem"
+tags = ["ctf", "lattice"]
 showFullContent = false
 readingTime = false
 hideComments = false
