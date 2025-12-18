@@ -1,6 +1,6 @@
 +++
 title = "BlahajCTF 2025 Author Writeups & Commentary"
-date = "2025-12-18T16:00:00+08:00"
+date = "2025-12-18T15:00:00+08:00"
 author = "azazo"
 description = "...and looking back on 3 years of BlahajCTF"
 showFullContent = false
