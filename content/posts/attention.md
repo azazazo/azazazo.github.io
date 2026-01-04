@@ -15,7 +15,7 @@ draft = true
 # Introduction
 Abel once said that Gauss "is like the fox, who effaces his tracks in the sand with his tail", to which Gauss replied, "no self-respecting architect leaves the scaffolding in place after completing his building". Indeed, Gauss's motto was "Pauca sed Matura" (few but ripe), and his work was often terse and opaque, devoid of motivation.
 
-Like Gauss, a lot of math proofs don't really show their author's reasoning, but rather presents a clean and polished result with details swept away by phrases such as "note that", "it is easy to see that", "one may observe that", and more. However, sometimes the thought process behind the proof is also rather interesting. In this post, I will introduce 3 "miraculous" proofs, and try to break down the thought process behind them.
+Like Gauss, some modern math proofs don't really show their author's reasoning, but rather presents a clean and polished result with details swept away. However, sometimes the thought process behind the proof is also rather interesting. In this post, I will introduce 3 "miraculous" proofs, and try to break down the thought process behind them.
 
 # Sum of rational cubes
 
@@ -28,7 +28,7 @@ x = \left(\frac{-x^3 + 243x - 729}{9x^2 - 81x + 729}\right)^3 + \left(\frac{-3x^
 \]
 > Hence proven.
 
-What a brilliant proof that pulls values out of nowhere like a magician. So, how can we construct three rational functions that when cubed, sum up to a desired value? Let's say that we have two polynomials \(f(x)\) and \(g(x)\). If we consider the sum of their cubes, we can see that
+What a brilliant proof that pulls values out of nowhere. So, how can we construct three rational functions that when cubed, sum up to a desired value? Let's say that we have two polynomials \(f(x)\) and \(g(x)\). If we consider the sum of their cubes, we can see that
 \[
     f^3 + g^3 = (f + g)(f^2 - fg + g^2)
 \]
@@ -120,7 +120,7 @@ Hence proven.
 \]
 > Note that involution has exactly one fixed point, so \(\left|S\right|\) is odd and the involution \((x,y,z) \mapsto (x,z,y)\) must also have a fixed point. Hence proven.
 
-This is a rather famous "one-sentence" proof. There are many other ways of proving the claim, including another non-constructive proof using lattices (that you might be able to see in my post about lattices if I ever get around to finishing it).
+This is a rather famous "one-sentence" proof. There are many other ways of proving the claim, including [another non-constructive proof using lattices](https://blog.azazo.me/posts/lattice-1/#tangent-fermats-theorem-no-not-that-one).
 
 First, let's fill in the tiny gap in the proof. If \((x,y,z) \mapsto (x,z,y)\) has a fixed point, say \((a,b,b)\), then \(p = a^2 + 4b^2 = a^2 + (2b)^2\) as desired. So we just need to show that the cardinality of \(S\) is odd. We can do this by constructing another involution with only one fixed point that is known, say, the trivial solution of \((1, 1, k)\) where \(p = 4k+1\).
 

@@ -94,7 +94,7 @@ Let's ponder about the time complexity of this algorithm. The total number of st
 
 Since polynomials are basically a list of numbers, this takes \(O(\min(\deg F, \deg G))\) time to compute too, so our final time complexity is something like \(O(\min(\deg F, \deg G)^2)\). Of course, this is assuming that all arithmetic operations on the coefficients of the polynomial take \(O(1)\) time. 
 
-Quadratic time is not very good. Not necessarily unusable, but still bad enough to leave one desiring for an alternative.
+Quadratic time is not very good. Not necessarily unusable, but still bad enough to leave one desiring for an alternative. For example, naïve polynomial multiplication with degree \(n\) has time complexity \(O(n^2)\), but with the Fast Fourier Transform one can do it in \(O(n \log n)\) time instead. The FFT leverages divide-and-conquer by first splitting the polynomial into two polynomials, 
 
 https://mystiz.hk/posts/2021/2021-02-15-dicectf-1/
 

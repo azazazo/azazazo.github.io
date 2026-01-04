@@ -122,7 +122,7 @@ There is also a (in my opinion) very nice proof using lattices and Minkowski's t
 
 > **Proof**: From Euler's Criterion, we know that \(-1\) is a quadratic residue modulo \(p\), as \(-1^{\frac{p-1}{2}} = 1\). Let \(i\) be an integer between \(0\) and \(p\) such that \(i^2 \equiv -1 \pmod p\). Now consider the lattice \(\mathcal{L}\) spanned by basis
 > \[
-    \mathbf{B} = \begin{bmatrix}1 & j\\0 & p\end{bmatrix}
+    \mathbf{B} = \begin{bmatrix}1 & i\\0 & p\end{bmatrix}
 \]
 > We can see that this \(\mathcal{L}\) is full rank and \(\det \mathcal{L} = p\). Consider the set \(S = \left\{\left(x, y\right) \mid x^2 + y^2 < 2p \right\}\), that is, a circle centered at the origin with radius \(\sqrt{2p}\). Minkowski's theorem says that since \(\text{vol}\left(S\right) = 2 \pi p > 2^2 \det \mathcal{L}\), there exist nonzero integers \(m\) and \(n\) such that \(0 < m^2 + (mi + np)^2 < 2p\). Reducing the expression modulo \(p\), we have that
 > \[
