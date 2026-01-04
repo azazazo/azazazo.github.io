@@ -7,6 +7,7 @@ tags = ["ctf", "writeup"]
 showFullContent = false
 readingTime = false
 hideComments = false
+draft = true
 +++
 
 # Introduction
@@ -295,7 +296,21 @@ MODULE_LICENSE("GPL");
 
 </details>
 
-That's pretty long, so let's break it down. The code we're looking at here registers a _character device_ at `/dev/checksumz`, and defines several methods for interacting with it. 
+That's pretty long, so let's break it down. The code we're looking at here registers a _character device_ at `/dev/checksumz`, and defines several methods for interacting with it. Without getting into too much detail, a character device is a special type of file that's used to interact with kernel modules. These files are located within `/dev`, and syscalls like `open`, `read`, `write` can be "overwritten" to perform special operations.
+
+We can see what we can do with `/dev/checksumz` from the `file_operations` struct:
+```c
+/* All the operations supported on this file */
+static const struct file_operations checksumz_fops = {
+	.owner = THIS_MODULE,
+	.open = checksumz_open,
+	.release = checksumz_release,
+	.unlocked_ioctl = checksumz_ioctl,
+	.write_iter = checksumz_write_iter,
+	.read_iter = checksumz_read_iter,
+	.llseek = checksumz_llseek,
+};
+```
 
 # ICO 2025 - studystudystudy
 
