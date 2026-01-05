@@ -12,7 +12,7 @@ draft = true
 
 # Introduction
 
-Happy (belated) new year. Here are writeups for two pwn challenges I didn't manage to solve last year.
+Happy (belated) new year. Here are writeups for two pwn challenges I didn't manage to solve last year. I'll be writing these writeups as if I was explaining the solutions to one year ago me, so some parts might be over/underexplained. 
 
 # IrisCTF 2025 - Checksumz
 
@@ -22,9 +22,7 @@ These two websites were very helpful:
 - https://blog.elmo.sg/posts/imaginary-ctf-2023-kernel-pwn
 - https://pawnyable.cafe/linux-kernel/ (in Japanese)[^1]
 
-so check them out if you want to learn more about kernel pwn.
-
-I'll be writing this writeup as if I was explaining the solution to one year ago me, so some parts might be over/underexplained. I am also not an expert in kernel pwn, so there may be some mistakes here and there. Sorry about that.
+so check them out if you want to learn more about kernel pwn. I am also not an expert in kernel pwn, so there may be some mistakes here and there. Sorry about that.
 
 ## What is kernel pwn?
 
@@ -312,7 +310,25 @@ static const struct file_operations checksumz_fops = {
 };
 ```
 
+From [our good friend bootlin elixir](https://elixir.bootlin.com/linux/v6.17/source/include/linux/fs.h#L2155) we can see that `struct file_operations` is a giant struct with everything(?) you could think of doing to a file. This struct tells our device how to respond to syscalls, so for example if something does `open("/dev/checksumz", O_RDWR)` then the `checksumz_open` function will be called.
+
+
+
 # ICO 2025 - studystudystudy
+
+This was a pwn challenge written by CSIT(?) for the second day of ICO 2025. I spent maybe about 3 hours on it during the day itself, but didn't manage to solve it because I was going down a rabbit hole that led nowhere; this challenge uses a non-libc allocator that I thought was the main entrypoint to solving the challenge.
+
+## Reversing
+
+source code blah blah
+
+## The primitive
+
+## What now?
+
+Ok, so now we can read and write to arbitrary addresses. Now what?
+
+## Leaking addresses
 
 
 
