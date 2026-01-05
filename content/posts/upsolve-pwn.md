@@ -310,9 +310,54 @@ static const struct file_operations checksumz_fops = {
 };
 ```
 
-From [our good friend bootlin elixir](https://elixir.bootlin.com/linux/v6.17/source/include/linux/fs.h#L2155) we can see that `struct file_operations` is a giant struct with everything(?) you could think of doing to a file. This struct tells our device how to respond to syscalls, so for example if something does `open("/dev/checksumz", O_RDWR)` then the `checksumz_open` function will be called.
+From [our good friend bootlin elixir](https://elixir.bootlin.com/linux/v6.10.10/source/include/linux/fs.h#L2000) we can see that `file_operations` is a giant struct with everything(?) you could think of doing to a file. This struct tells our device how to respond to syscalls, so for example if something does `open("/dev/checksumz", O_RDWR)` then the `checksumz_open` function will be called.
 
+You might have noticed that the function signatures are different from their usual counterparts. `open` does not take in a path or mode, and `checksumz_read` and `write` do not take in a file descriptor. Instead, they receive [a `file` struct](https://elixir.bootlin.com/linux/v6.10.10/source/include/linux/fs.h#L988), representing well... a file. The `file` struct contains many fields, but for us the only important one is `private_data`, which is a pointer that can be used to store device-specific data.
 
+Now let's finally take a look at the functions to see what they do.
+```c
+/* This is the counterpart to open() */
+static int checksumz_open(struct inode *inode, struct file *file) {
+	file->private_data = kzalloc(sizeof(struct checksum_buffer), GFP_KERNEL);
+
+	struct checksum_buffer* buffer = (struct checksum_buffer*) file->private_data;
+
+	buffer->pos = 0;
+	buffer->size = 512;
+	buffer->read = 0;
+	buffer->name = kzalloc(1000, GFP_KERNEL);
+	buffer->s1 = 1;
+	buffer->s2 = 0;
+
+	const char* def = "default";
+	memcpy(buffer->name, def, 8);
+
+	for (size_t i = 0; i < buffer->size; i++)
+		buffer->state[i] = 0;
+
+	return 0;
+}
+```
+
+This function simply allocates enough memory for the "internal state" of the device (the `checksum_buffer` struct) and stores its pointer in the aforementioned `private_data` field. The `checksum_buffer` struct is
+```c
+struct checksum_buffer {
+	loff_t pos;
+	char state[512];
+	size_t size;
+	size_t read;
+	char* name;
+	uint32_t s1;
+	uint32_t s2;
+};
+```
+and it starts off with `state` nulled out and `name` equal to `"default"`. The `checksumz_release` function, as the counterpart to `close()`, simply frees the allocated memory.
+
+## The primitive
+
+## What now?
+
+## Taking care of KASLR
 
 # ICO 2025 - studystudystudy
 
@@ -320,7 +365,198 @@ This was a pwn challenge written by CSIT(?) for the second day of ICO 2025. I sp
 
 ## Reversing
 
-source code blah blah
+Sadly we don't get the source code, so I chucked the binary into IDA.
+```c
+int __fastcall main(int argc, const char **argv, const char **envp)
+{
+  int v4; // [rsp+4h] [rbp-5Ch] BYREF
+  void *v5; // [rsp+8h] [rbp-58h]
+  _BYTE buf[72]; // [rsp+10h] [rbp-50h] BYREF
+  unsigned __int64 v7; // [rsp+58h] [rbp-8h]
+
+  v7 = __readfsqword(0x28u);
+  setbuf(stdin, 0);
+  setbuf(stdout, 0);
+  setbuf(stderr, 0);
+  initHeap();
+  showMenu();
+  while ( 1 )
+  {
+    do
+    {
+      getChoice();
+      v5 = (void *)read(0, buf, 0x40u);
+      CHECK(v5);
+      *((_BYTE *)v5 + (_QWORD)buf - 1) = 0;
+    } while ( (unsigned int)__isoc99_sscanf(buf, "%d", &v4) != 1 );
+    switch ( v4 )
+    {
+      case 0: return 0;
+      case 1: addHomework(); break;
+      case 2: getHomework(); break;
+      case 3: editHomework(); break;
+      case 4: deleteHomework(); break;
+      case 5: getHomeworks(); break;
+      case 6: createEvent(); break;
+      case 7: getEvent(); break;
+      case 8: editEvent(); break;
+      case 9: deleteEvent(); break;
+      case 10: listEvents(); break;
+    }
+  }
+}
+```
+This seems to be a normal CRUD heap challenge, except we get two (2!) types of things to play with. Let's look at what they look like:
+```c
+ssize_t __fastcall addHomework()
+{
+  homework *v0; // rbx
+  size_t v1; // rax
+  size_t v2; // rax
+  size_t v4; // rax
+  int i; // [rsp+4h] [rbp-1Ch]
+
+  for ( i = 0; i <= 15; ++i )
+  {
+    if ( !HOMEWORK[i] )
+    {
+      HOMEWORK[i] = (homework *)MALLOC(16);
+      CHECK(HOMEWORK[i]);
+      v0 = HOMEWORK[i];
+      v0->buf = (char *)MALLOC(64);
+      CHECK(HOMEWORK[i]->buf);
+      v1 = strlen(GET_HOMEWORK);
+      write(1, GET_HOMEWORK, v1);
+      HOMEWORK[i]->size = read(0, HOMEWORK[i]->buf, 0x40u);
+      v2 = strlen(GOT_HOMEWORK);
+      return write(1, GOT_HOMEWORK, v2);
+    }
+  }
+  v4 = strlen(NOO_HOMEWORK);
+  return write(1, NOO_HOMEWORK, v4);
+}
+```
+The decompilation was really annoying to look at, so I've slightly cleaned it up by defining the `homework` struct. It's 16 bytes long, and looks like
+```c
+struct homework {
+    size_t size;
+    char *buf;
+};
+```
+where `size` is simply the number of characters read into `buf`.
+
+The code for creating events is much more verbose:
+```c
+unsigned __int64 __fastcall createEvent()
+{
+  size_t v0; // rax
+  size_t v1; // rax
+  size_t v2; // rax
+  size_t v3; // rax
+  int year; // [rsp+8h] [rbp-288h] BYREF
+  int month; // [rsp+Ch] [rbp-284h] BYREF
+  int day; // [rsp+10h] [rbp-280h] BYREF
+  int i; // [rsp+14h] [rbp-27Ch]
+  int v9; // [rsp+18h] [rbp-278h]
+  int v10; // [rsp+1Ch] [rbp-274h]
+  void *v11; // [rsp+20h] [rbp-270h]
+  time_t event_time; // [rsp+28h] [rbp-268h]
+  void *v13; // [rsp+30h] [rbp-260h]
+  time_t *v14; // [rsp+38h] [rbp-258h]
+  struct tm tp; // [rsp+40h] [rbp-250h] BYREF
+  _QWORD buf[32]; // [rsp+80h] [rbp-210h] BYREF
+  char s[264]; // [rsp+180h] [rbp-110h] BYREF
+  unsigned __int64 v18; // [rsp+288h] [rbp-8h]
+
+  v18 = __readfsqword(0x28u);
+  memset(buf, 0, sizeof(buf));
+  memset(s, 0, 256);
+  for ( i = 0; ; ++i )
+  {
+    if ( i > 15 )
+    {
+      v3 = strlen(NOO_HOMEWORK);
+      write(1, NOO_HOMEWORK, v3);
+      return v18 - __readfsqword(0x28u);
+    }
+    if ( !EVENT[i] )
+      break;
+  }
+  v0 = strlen(GET_EVENT_TIME);
+  write(1, GET_EVENT_TIME, v0);
+  v11 = (void *)read(0, buf, 0x100u);
+  CHECK(v11);
+  v9 = strlen((const char *)buf);
+  *((_BYTE *)buf + v9 - 1) = 0;
+  if ( (unsigned int)__isoc99_sscanf(buf, "%4d-%2d-%2d", &year, &month, &day) == 3 )
+  {
+    *(_QWORD *)&tp.tm_sec = 0;
+    tp.tm_hour = 0;
+    memset(&tp.tm_yday, 0, 28);
+    *(_QWORD *)&tp.tm_year = (unsigned int)(year - 1900);
+    tp.tm_mon = month - 1;
+    tp.tm_mday = day;
+    event_time = timegm(&tp);
+    if ( event_time != -1 )
+    {
+      v1 = strlen(GET_EVENT);
+      write(1, GET_EVENT, v1);
+      v13 = (void *)read(0, s, 0x100u);
+      CHECK(v13);
+      v10 = strlen(s);
+      v14 = (time_t *)MALLOC(v10 + 9);
+      *v14 = event_time;
+      memcpy(v14 + 1, s, v10);
+      *((_BYTE *)v14 + v10 + 8) = 0;
+      EVENT[i] = v14;
+      v2 = strlen(GOT_EVENT);
+      write(1, GOT_EVENT, v2);
+    }
+  }
+  return v18 - __readfsqword(0x28u);
+}
+```
+An event has a date (represeted by the number of seconds since 1970-01-01 as a `time_t`) and description. Of note is that the description is directly stored in the chunk, instead of having a pointer to another memory location. The size of an event is thus variable.
+
+There's a lot of functions to look through but let's just skip to the vulnerable one, `editHomework()`:
+```c
+unsigned __int64 __fastcall deleteHomework()
+{
+  size_t v0; // rax
+  int v2; // [rsp+Ch] [rbp-44h] BYREF
+  int i; // [rsp+10h] [rbp-40h]
+  int j; // [rsp+14h] [rbp-3Ch]
+  void *v5; // [rsp+18h] [rbp-38h]
+  _BYTE buf[40]; // [rsp+20h] [rbp-30h] BYREF
+  unsigned __int64 v7; // [rsp+48h] [rbp-8h]
+
+  v7 = __readfsqword(0x28u);
+  v0 = strlen(GET_HOMEWORK_INDEX);
+  write(1, GET_HOMEWORK_INDEX, v0);
+  v5 = (void *)read(0, buf, 0x1Fu);
+  CHECK(v5);
+  *((_BYTE *)v5 + (_QWORD)buf - 1) = 0;
+  if ( (unsigned int)__isoc99_sscanf(buf, "%d", &v2) == 1 )
+  {
+    for ( i = 0; i <= 15; ++i )
+    {
+      if ( HOMEWORK[i] && i == v2 )
+      {
+        FREE(HOMEWORK[i]->buf);
+        HOMEWORK[i]->buf = 0;
+        HOMEWORK[i]->size = 0;
+        FREE(HOMEWORK[i]);
+        HOMEWORK[i] = 0;
+      }
+    }
+    for ( j = v2; j <= 14; ++j )
+      HOMEWORK[j] = HOMEWORK[j + 1];
+  }
+  return v7 - __readfsqword(0x28u);
+}
+```
+
+As you might have noticed from the function name, the `MALLOC()` here isn't the standard libc `malloc()`, and instead uses [`PartitionAlloc` from Chromium](https://chromium.googlesource.com/chromium/blink/+/master/Source/wtf/PartitionAlloc.h).
 
 ## The primitive
 
