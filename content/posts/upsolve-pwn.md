@@ -351,9 +351,15 @@ struct checksum_buffer {
 	uint32_t s2;
 };
 ```
-and it starts off with `state` nulled out and `name` equal to `"default"`. The `checksumz_release` function, as the counterpart to `close()`, simply frees the allocated memory.
+and it starts off with `state` nulled out and `name` equal to `"default"`. The `pos` field stores the index of the "cursor" of the `state` array, determining where to start writing/reading. The `size` field represents the size of the buffer, initialised to 512, and is used for bounds checks. The other fields are slightly irrelevant to the exploit.
+
+The `checksumz_release` function, as the counterpart to `close()`, simply frees the allocated memory. `checksumz_write_iter` and `checksumz_read_iter` are the counterparts to `write()` and `read()`; we can write a maximum of 16 bytes at a time into `state` and read a maximum of 256 bytes from `state`, both starting at any index between 0 and `size`.
+
+`checksumz_llseek` lets us seek through the file by changing the value of `pos`. `checksumz_ioctl` is a more miscellaneous function; depending on its argument, it lets us shorten the buffer by decreasing `size`, rename the buffer by changing `name`, or calculate the Adler32 checksum of the contents of `state`.
 
 ## The primitive
+
+The write and read functions are implemented incorrectly. Since only the starting position is checked for whether it's out of bounds, we can write 15 bytes and read 255 bytes past the end of `state`. 
 
 ## What now?
 
@@ -518,7 +524,9 @@ unsigned __int64 __fastcall createEvent()
 ```
 An event has a date (represeted by the number of seconds since 1970-01-01 as a `time_t`) and description. Of note is that the description is directly stored in the chunk, instead of having a pointer to another memory location. The size of an event is thus variable.
 
-There's a lot of functions to look through but let's just skip to the vulnerable one, `editHomework()`:
+## The primitive
+
+There's a lot of functions to look through but let's just skip to the erroneous one, `deleteHomework()`:
 ```c
 unsigned __int64 __fastcall deleteHomework()
 {
@@ -556,9 +564,11 @@ unsigned __int64 __fastcall deleteHomework()
 }
 ```
 
-As you might have noticed from the function name, the `MALLOC()` here isn't the standard libc `malloc()`, and instead uses [`PartitionAlloc` from Chromium](https://chromium.googlesource.com/chromium/blink/+/master/Source/wtf/PartitionAlloc.h).
+Notice how in the second for loop, the program "shifts" all homeworks after the deleted one to the left to get rid of the hole. However, `HOMEWORK[15]` is not set to 0. This means that if we fill up the homework array then delete any homework, `HOMEWORK[14]` and `HOMEWORK[15]` will point to the same homework. If we then delete the homework at index 15, we will have a use after free!
 
-## The primitive
+However, as you might have noticed from the function name, the `MALLOC()` here isn't the standard libc `malloc()`, and instead uses [`PartitionAlloc` from Chromium](https://chromium.googlesource.com/chromium/blink/+/master/Source/wtf/PartitionAlloc.h). So, the structure of an allocated/freed chunk are different from usual, and we can't just copy payloads over.
+
+Doing a bit of reverse engineering, 
 
 ## What now?
 
