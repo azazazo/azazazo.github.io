@@ -359,7 +359,9 @@ The `checksumz_release` function, as the counterpart to `close()`, simply frees 
 
 ## The primitive
 
-The write and read functions are implemented incorrectly. Since only the starting position is checked for whether it's out of bounds, we can write 15 bytes and read 255 bytes past the end of `state`. 
+The write and read functions are implemented incorrectly. Since only the starting position is checked for whether it's out of bounds, we can write 15 bytes and read 255 bytes past the end of `state`.
+
+This is a very limited primitive, but conveniently, right after `state` in the struct is `size`. As a reminder, `size` is the bound that our read/write index is check against. If we set `size` to a really large number, we can read/write from anywhere in memory after the `state` buffer!
 
 ## What now?
 
