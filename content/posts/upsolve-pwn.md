@@ -564,15 +564,17 @@ unsigned __int64 __fastcall deleteHomework()
 }
 ```
 
-Notice how in the second for loop, the program "shifts" all homeworks after the deleted one to the left to get rid of the hole. However, `HOMEWORK[15]` is not set to 0. This means that if we fill up the homework array then delete any homework, `HOMEWORK[14]` and `HOMEWORK[15]` will point to the same homework. If we then delete the homework at index 15, we will have a use after free!
+Notice how in the second for loop, the program "shifts" all homeworks after the deleted one to the left to get rid of the hole. However, `HOMEWORK[15]` is not set to 0. This means that if we fill up the homework array then delete any homework, `HOMEWORK[14]` and `HOMEWORK[15]` will point to the same homework. If we then delete the homework at index 15, we have a use after free!
 
 However, as you might have noticed from the function name, the `MALLOC()` here isn't the standard libc `malloc()`, and instead uses [`PartitionAlloc` from Chromium](https://chromium.googlesource.com/chromium/blink/+/master/Source/wtf/PartitionAlloc.h). So, the structure of an allocated/freed chunk are different from usual, and we can't just copy payloads over.
 
-Doing a bit of reverse engineering, 
+Fortunately, we don't need to learn much about how the allocator works to solve this challenge. 
 
 ## What now?
 
-Ok, so now we can read and write to arbitrary addresses. Now what?
+Ok, so now we can read and write to arbitrary addresses. What do we do now? This might sound like a stupid question but 
+
+
 
 ## Leaking addresses
 
