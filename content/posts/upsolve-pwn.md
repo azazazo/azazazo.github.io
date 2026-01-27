@@ -574,7 +574,9 @@ Fortunately, we don't need to learn much about how the allocator works to solve 
 
 ## What now?
 
-Ok, so now we can read and write to arbitrary addresses. What do we do now? This might sound like a stupid question but 
+Ok, so now we can read and write to arbitrary addresses. What do we do now? This might sound like a stupid question, but it was something that (unfortunately) I was mentally stuck on for quite some while. Beyond simple ret2win/ret2libc challenges, there is often no clear way to get a shell, which intimidated me quite a lot for some reason.
+
+Anyways, there exists [this helpful resource](https://github.com/nobodyisnobody/docs/blob/main/code.execution.on.last.libc/README.md) that goes through several ways of executing arbitrary code given a write primitive. 
 
 
 
