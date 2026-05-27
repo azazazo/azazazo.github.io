@@ -7,7 +7,7 @@ tags = ["math"]
 showFullContent = false
 readingTime = false
 hideComments = false
-#draft = true
+draft = true
 +++
 
 {{< math >}}
