@@ -24,7 +24,7 @@ Originally I wanted to put together my own blogging framework-slash-system (call
 
 # See also
 Here is a list of websites from Very Cool People (who I hope consider me as their friend) you should check them out
-- https://canairo.github.io/
+- https://bleedinghe.art/
 - https://scuffed.online/
 - https://fern89.github.io/
 
