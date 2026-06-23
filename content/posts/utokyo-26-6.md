@@ -48,7 +48,7 @@ If not all \(e_i\) are even, then out of all the possible sums exactly half are 
     f(n) = g(n) = \frac12\prod\left(d_i+1\right)\prod\left(e_i+1\right)
 \] which is identical to when \(n \equiv 2 \pmod 3\).
 
-In the case that all \(e_i\) are even, for most choices of \(e_i\)s that result in an even sum we can associate it to a choice of \(e_i\)s that has odd sum by reducing the first non-zero \(e_i\) by 1. The only time this strategy fails is when all \(e_i\) are 0, so we get that there is exactly 1 more choice that result in even sum than the choices that result in odd sum. Therefore, \[
+In the case that all \(e_i\) are even, for most choices of \(e_i\)s that result in an even sum we can associate it to a choice of \(e_i\)s that has odd sum. For a choice of \(a_i\) we associate it with the set \(A_k\), where \(k\) is the smallest integer such that \(a_k\) is non-zero. Within each set \(A_k\), we can use the same reasoning as above to conclude that there is an equal number of choices with odd sum and choices with even sum in every \(A_i\). The only choice that is not included in any \(A_i\) is when all \(a_i\) are 0, so we get that there is exactly 1 more choice that result in even sum than the choices that result in odd sum. Therefore, \[
     \begin{align}
     f(n) &= \frac12\prod\left(d_i+1\right)\left(\prod\left(e_i+1\right)+1\right)\\
     g(n) &= \frac12\prod\left(d_i+1\right)\left(\prod\left(e_i+1\right)-1\right)\\
@@ -65,8 +65,8 @@ That was a lot of work, but we can now answer the question easily.
     &= 14\\
     \end{align}
 \]
-2. Follows trivially from the formulas we have derived.
-3. One possible value of \(f(n)\) is \(g(n) = 15\). For the other possible values, see that \[
+1. Follows trivially from the formulas we have derived.
+2. One possible value of \(f(n)\) is \(g(n) = 15\). For the other possible values, see that \[
     \begin{align}
     f(n) - g(n) &= \frac12\prod\left(d_i+1\right)\left(\prod\left(e_i+1\right)+1\right) - \frac12\prod\left(d_i+1\right)\left(\prod\left(e_i+1\right)-1\right)\\
     &= \prod\left(d_i+1\right)
